@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:paddingHorizontal="34dp"
+    android:paddingBottom="74dp">
+
+    <TextView
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="53dp"
+        android:text="@string/sign_up"
+        android:textSize="34dp" />
+
+    <TextView
+        android:id="@+id/user_id_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="ID"
+        android:textColor="@color/colorPrimary"
+        android:textSize="12dp"
+        android:visibility="invisible" />
+
+    <EditText
+        android:id="@+id/edit_user_id"
+        style="@style/sign_edit_text"
+        android:hint="ID"
+        android:paddingEnd="4dp" />
+
+    <TextView
+        android:id="@+id/id_error_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/id_taken_error"
+        android:textColor="@color/errorTextColor"
+        android:textSize="12dp"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/user_name_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="User name"
+        android:textColor="@color/colorPrimary"
+        android:textSize="12dp"
+        android:visibility="invisible" />
+
+    <EditText
+        android:id="@+id/edit_user_name_view"
+        style="@style/sign_edit_text"
+        android:hint="User name"
+        android:paddingEnd="4dp" />
+
+    <TextView
+        android:id="@+id/password_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Password"
+        android:textColor="@color/colorPrimary"
+        android:textSize="12dp"
+        android:visibility="invisible" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/edit_password_view"
+            style="@style/sign_edit_text"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:paddingEnd="4dp" />
+
+        <ImageButton
+            android:id="@+id/show_password_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="36dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/bling_setup_password_show"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/password_error_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text=""
+        android:textSize="12dp" />
+
+    <LinearLayout
+        android:id="@+id/password_check_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/password_check_view"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Password confirm"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12dp"
+            android:visibility="invisible" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/edit_password_check_view"
+                style="@style/sign_edit_text"
+                android:hint="Password confirm"
+                android:inputType="textPassword"
+                android:paddingEnd="4dp" />
+
+            <ImageButton
+                android:id="@+id/show_password_check_btn"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/bling_setup_password_show"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/password_check_error_view"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/password_check_error"
+            android:textColor="@color/errorTextColor"
+            android:textSize="12dp"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/sing_up_next_btn"
+        style="@style/setup_btn"
+        android:alpha="0.4"
+        android:enabled="false"
+        android:text="Next" />
+</LinearLayout>

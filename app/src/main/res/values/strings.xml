@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Bling</string>
+
+    <string name="setup_title">Welcome!</string>
+    <string name="pairing_with_bling">Pairing with bling</string>
+    <string name="go_to_setting">Go to setting</string>
+
+    <string name="my_team">My Team</string>
+    <string name="my_star">My Star</string>
+    <string name="on_line">On-line</string>
+    <string name="off_line">Off-line</string>
+
+    <string name="sign_up">Sign up</string>
+    <string name="id">ID</string>
+    <string name="user_name">User name</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_out">Sign out</string>
+    <string name="change">Change</string>
+    <string name="password">Password</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="new_password">New password</string>
+    <string name="password_confirm">Password confirm</string>
+    <string name="remove_account">Remove an account</string>
+    <string name="id_taken_error">That ID is taken. Try another</string>
+    <string name="password_error">Use 8 or more characters with a mix of letters,\nnumbers &amp; symbols</string>
+    <string name="password_check_error">Those passwords didn’t match</string>
+    <string name="remove_account_dialog_q">Deleting your account will remove all of\n your information from our database.\nThis cannot be undone.\nAre you sure you want to delete your\naccount? </string>
+    <string name="sign_out_dialog_q">Are you sure you want to sign out?</string>
+
+    <string name="setting_title">Setting</string>
+    <string name="history_title">history</string>
+    <string name="account_title">My account</string>
+    <string name="chart_title">Cheering lights</string>
+
+    <string name="light_mode">Light mode</string>
+    <string name="general_light">General light</string>
+    <string name="cheering_light">Cheering light</string>
+    <string name="cheeringlights_logo">The fans are sending you the\n lights to cheer you up</string>
+    <string name="brightness">Brightness</string>
+    <string name="color">Color</string>
+    <string name="battery">Battery</string>
+
+    <string name="baseUrl">https://52.79.216.28:8080/v1/</string>
+
+    <string name="service_notification_msg">The Bling is currently waiting for the star.</string>
+    <string name="login_error_toast">The ID or password is incorrect. Please try again.</string>
+</resources>

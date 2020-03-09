@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "558922758142",
+    "firebase_url": "https://bling-92715.firebaseio.com",
+    "project_id": "bling-92715",
+    "storage_bucket": "bling-92715.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558922758142:android:3d11a786feedeb82cab2af",
+        "android_client_info": {
+          "package_name": "com.samsung.android.bling"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "558922758142-t4s7mbbqpvdqu56bjfdfhd280ig6stbo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDu6ChKA2PJpdhLOGEEyEutq2nImPpJej0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "558922758142-t4s7mbbqpvdqu56bjfdfhd280ig6stbo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

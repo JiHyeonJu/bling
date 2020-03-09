@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        app:contentInsetStart="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/home_as_up"
+                android:layout_width="29dp"
+                android:layout_height="29dp"
+                android:layout_marginStart="21dp"
+                android:layout_marginEnd="11dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/bling_rewards_back" />
+
+            <TextView
+                style="@style/font_700"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/setting_title"
+                android:textSize="19dp" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/setting_account_btn"
+                android:layout_width="29dp"
+                android:layout_height="29dp"
+                android:layout_marginEnd="31dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/bling_setting_account" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_divider_height"
+        android:layout_marginHorizontal="24dp"
+        android:background="@color/dividerColor" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/setting_section_title"
+                android:layout_marginBottom="17dp"
+                android:text="@string/light_mode" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="28dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/general_light_btn"
+                    style="@style/light_mode_button"
+                    android:background="@drawable/setting_selected_lgiht_btn"
+                    android:text="@string/general_light"
+                    android:textColor="@color/white"
+                    android:textSize="16dp" />
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="match_parent" />
+
+                <Button
+                    android:id="@+id/cheering_light_btn"
+                    style="@style/light_mode_button"
+                    android:background="@drawable/setting_nonselected_lgiht_btn"
+                    android:text="@string/cheering_light"
+                    android:textSize="16dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/section_height"
+                android:layout_marginTop="25dp"
+                android:background="@color/sectionColor" />
+
+            <TextView
+                style="@style/setting_section_title"
+                android:layout_marginBottom="19dp"
+                android:text="@string/brightness" />
+
+            <com.marcinmoskala.arcseekbar.ArcSeekBar
+                android:id="@+id/brightness_arc_seek_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="130dp"
+                android:layout_marginHorizontal="53dp"
+                android:layout_marginBottom="16dp"
+                app:maxProgress="100000000"
+                app:progressBackgroundColor="@color/seekbarBgColor"
+                app:progressBackgroundWidth="6dp"
+                app:progressColor="@color/colorPrimary"
+                app:progressWidth="6dp"
+                app:roundEdges="true"
+                app:thumb="@drawable/setting_brightness_seekbar_thumb" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="53dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/bling_setting_brightness_0" />
+
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:src="@drawable/bling_setting_brightness_100" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/section_height"
+                android:layout_marginTop="25dp"
+                android:background="@color/sectionColor" />
+
+            <LinearLayout
+                android:id="@+id/color_picker_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/setting_section_title"
+                    android:layout_marginBottom="20dp"
+                    android:text="@string/color" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!--todo : color bar-->
+                    <include layout="@layout/setting_color_scroll_view" />
+
+                    <ImageButton
+                        android:id="@+id/setting_color_picker_btn"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_gravity="end"
+                        android:layout_marginHorizontal="31dp"
+                        android:background="@drawable/bling_setting_color_custom" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/section_height"
+                    android:layout_marginTop="25dp"
+                    android:background="@color/sectionColor" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/setting_section_title"
+                android:layout_marginBottom="16dp"
+                android:text="@string/battery" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="31dp"
+                android:layout_marginBottom="7dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/font_700"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:text="38%"
+                    android:textSize="12dp" />
+
+                <TextView
+                    style="@style/font_700"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="1 hour 28 mins"
+                    android:textSize="12dp" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/battery_seek_bar"
+                android:layout_width="match_parent"
+                android:layout_height="18dp"
+                android:layout_marginBottom="44dp"
+                android:layout_weight="1"
+                android:paddingStart="31dp"
+                android:paddingEnd="31dp"
+                android:progressDrawable="@drawable/setting_battery_seekbar"
+                android:thumb="@android:color/transparent" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@color/lightGray"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/action_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="1" />
+
+                <Button
+                    android:id="@+id/action_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="2" />
+
+                <Button
+                    android:id="@+id/action_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="3" />
+
+                <Button
+                    android:id="@+id/action_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="4" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

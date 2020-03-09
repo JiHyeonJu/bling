@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbar_height">68dp</dimen>
+    <dimen name="toolbar_divider_height">1dp</dimen>
+    <dimen name="photo_kit_margin_horizontal">56dp</dimen>
+    <dimen name="photo_kit_padding_bottom">16dp</dimen>
+    <dimen name="section_height">18dp</dimen>
+    <dimen name="last_section_height">5dp</dimen>
+    <dimen name="history_item_margin_bottom">16dp</dimen>
+    <dimen name="history_has_divider_item_margin_bottom">28dp</dimen>
+    <dimen name="history_last_item_margin_bottom">460dp</dimen>
+</resources>

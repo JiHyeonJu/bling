@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/photo_kit_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/photo_kit_padding_bottom">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/image"
+            style="@style/member_view" />
+
+        <ImageView
+            android:id="@+id/locked"
+            style="@style/locked_icon" />
+
+        <ImageView
+            android:id="@+id/selected"
+            style="@style/selected_view" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/member_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

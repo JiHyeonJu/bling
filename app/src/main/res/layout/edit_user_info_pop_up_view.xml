@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="31dp"
+    android:paddingTop="38dp"
+    android:paddingBottom="20dp">
+
+    <TextView
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="User name"
+        android:textColor="@color/colorPrimary"
+        android:textSize="12dp"
+        android:visibility="visible" />
+
+    <EditText
+        android:id="@+id/edit_user_name_view"
+        style="@style/sign_edit_text"
+        android:background="@drawable/edit_text_background_focused"
+        android:paddingEnd="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/cancel"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/main_rect_btn_ripple"
+            android:gravity="center"
+            android:text="Cancel"
+            android:textSize="16dp" />
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="16dp"
+            android:background="@color/pickerDialogBTLineColor" />
+
+        <Button
+            android:id="@+id/done"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/main_rect_btn_ripple"
+            android:gravity="center"
+            android:text="Done"
+            android:textSize="16dp" />
+
+    </LinearLayout>
+</LinearLayout>

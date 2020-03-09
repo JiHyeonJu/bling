@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="31dp">
+
+        <ImageView
+            android:id="@+id/is_new_view"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/setting_color_view"
+            android:backgroundTint="@color/colorPrimary" />
+
+        <TextView
+            android:id="@+id/time_view"
+            style="@style/font_700"
+            android:layout_width="42dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:textSize="12dp" />
+
+        <TextView
+            android:id="@+id/members_view"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="15dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/history_view_layout"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="31dp">
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="52dp"
+            android:background="@color/lightGray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/history_item_box_view"
+            android:gravity="center_vertical"
+            android:padding="17dp">
+
+            <ImageView
+                android:id="@+id/data_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="12dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/history_divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/section_height"
+        android:background="@color/sectionColor"
+        android:visibility="gone" />
+</LinearLayout>

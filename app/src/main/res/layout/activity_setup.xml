@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:paddingHorizontal="34dp"
+    android:paddingBottom="74dp">
+
+    <TextView
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="53dp"
+        android:text="@string/setup_title"
+        android:textSize="34dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:layout_marginBottom="4dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/font_700"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/pairing_with_bling"
+            android:textSize="19dp" />
+
+        <ImageView
+            android:id="@+id/setup_paring_check_view"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="1dp"
+            android:src="@drawable/bling_setup_check"
+            android:tint="@color/setupUncheckedColor" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/setup_bluetooth_link_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="37dp"
+        android:background="@drawable/underline_view"
+        android:clickable="true"
+        android:paddingBottom="2dp"
+        android:text="@string/go_to_setting"
+        android:textColor="@color/colorPrimary"
+        android:textSize="15dp" />
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/setup_next_btn"
+        style="@style/setup_btn"
+        android:alpha="0.4"
+        android:text="Next" />
+</LinearLayout>

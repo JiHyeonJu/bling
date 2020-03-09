@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="31dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="34dp">
+
+    <TextView
+        android:id="@+id/month_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="7dp"
+        android:text="2020.02"
+        android:textSize="15dp" />
+
+    <TextView
+        android:id="@+id/day_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="28 Today"
+        android:textSize="25dp" />
+
+    <TextView
+        android:id="@+id/week_view"
+        style="@style/font_700"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-1dp"
+        android:text="Fri"
+        android:textSize="12dp" />
+</LinearLayout>

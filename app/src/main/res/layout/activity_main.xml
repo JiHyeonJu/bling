@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:weightSum="2.1"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/sectionColor"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/fcm_text"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="30dp"
+            android:text="FCM_text"
+            android:textSize="30dp" />
+
+        <Button
+            android:id="@+id/unpair_btn"
+            style="@style/font_700"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="unpair device" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:weightSum="9.6">
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="2.2" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="121dp"
+                android:layout_height="81dp"
+                android:layout_gravity="start"
+                android:layout_marginStart="30dp"
+                android:src="@drawable/bling_main_logo" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/setting_btn"
+                android:layout_width="29dp"
+                android:layout_height="29dp"
+                android:layout_marginTop="38dp"
+                android:layout_marginEnd="31dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/bling_main_control" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="3.4" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp">
+
+            <TextView
+                android:id="@+id/star_name_view"
+                style="@style/font_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="11dp"
+                android:layout_weight="1"
+                android:textSize="21dp" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/user_name_view"
+                style="@style/font_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="11dp"
+                android:layout_weight="1"
+                android:textSize="21dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="1dp">
+
+            <TextView
+                android:id="@+id/star_define_view"
+                style="@style/font_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="11dp"
+                android:layout_weight="1"
+                android:textSize="12dp" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                style="@style/font_700"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="11dp"
+                android:layout_weight="1"
+                android:text="Me"
+                android:textSize="12dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp">
+
+            <TextView
+                android:id="@+id/star_status_view"
+                style="@style/on_off_view"
+                android:background="@drawable/main_offline_view"
+                android:text="Off-line" />
+
+            <View
+                android:layout_width="20dp"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/my_status_view"
+                style="@style/on_off_view"
+                android:background="@drawable/main_offline_view"
+                android:text="Off-line" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.1"
+        android:background="@color/sectionColor"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="23dp">
+
+        <Button
+            android:id="@+id/history_btn"
+            style="@style/main_btn"
+            android:text="Bling history" />
+
+        <Button
+            android:id="@+id/reward_btn"
+            style="@style/main_btn"
+            android:layout_marginTop="18dp"
+            android:text="My Photo-Kit" />
+
+        <Button
+            android:id="@+id/chart_btn"
+            style="@style/main_btn"
+            android:layout_marginTop="18dp"
+            android:text="Cheering lights" />
+
+    </LinearLayout>
+</LinearLayout>
