@@ -182,7 +182,6 @@ public class SettingActivity extends Activity {
         mColorScrollView = findViewById(R.id.color_scroll_view);
         setColorScrollView();
         setColorCheckbox(0);
-        setColorScrollOnClickListener();
 
         mColorPickerLayout = findViewById(R.id.color_picker_layout);
         mColorPickerBtn = findViewById(R.id.setting_color_picker_btn);
@@ -336,7 +335,7 @@ public class SettingActivity extends Activity {
 
             mColorTitle.setAlpha(1);
             mColorScrollView.setAlpha(1);
-            mColorPickerBtn.setAlpha(1);
+            mColorPickerBtn.setImageAlpha(1);
             mBrightnessSeekBar.setEnabled(true);
             mColorPickerBtn.setEnabled(true);
 
@@ -443,21 +442,30 @@ public class SettingActivity extends Activity {
             if (i < savedColorCount) {
                 int color = Color.parseColor(colorQueue.poll());
                 Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), color);
+                setColorScrollOnClickListener(i, true);
             } else {
                 Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), getColor(R.color.white));
+                setColorScrollOnClickListener(i, false);
             }
         }
 
         Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(savedColorCount)).getChildAt(0), getColor(R.color.colorPrimary));
         Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#2FB1FE"));
+        setColorScrollOnClickListener(savedColorCount, true);
+        setColorScrollOnClickListener(savedColorCount + 1, true);
         colorQueue = Utils.getList(getApplicationContext(), "savedColor");
     }
 
-    private void setColorScrollOnClickListener() {
-        for (int i = 7; i >= 0; i--) {
-            final int index = i;
-            ((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0).setOnClickListener(v -> {
+    private void setColorScrollOnClickListener(int index, boolean clickable) {
+        if (clickable) {
+            ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
+                Log.d(TAG, "jjh clicked" + index);
                 setColorCheckbox(index);
+            });
+        } else {
+            ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
+                // do nothing
+                Log.d(TAG, "jjh do not acting" + index);
             });
         }
     }

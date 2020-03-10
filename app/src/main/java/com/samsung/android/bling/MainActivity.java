@@ -176,8 +176,7 @@ public class MainActivity extends AppCompatActivity {
 
                 setStatusView("on".equals(message), true);
             }
-
-            Log.d(TAG, "action: " + action + ", message" + message);
+            Log.d(TAG, "action: " + action + ", message: " + message);
         }
     };
 
