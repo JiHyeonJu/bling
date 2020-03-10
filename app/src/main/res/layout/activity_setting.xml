@@ -63,6 +63,7 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/light_mode_title"
                 style="@style/setting_section_title"
                 android:layout_marginBottom="17dp"
                 android:text="@string/light_mode" />
@@ -100,6 +101,7 @@
                 android:background="@color/sectionColor" />
 
             <TextView
+                android:id="@+id/brightness_title"
                 style="@style/setting_section_title"
                 android:layout_marginBottom="19dp"
                 android:text="@string/brightness" />
@@ -119,6 +121,7 @@
                 app:thumb="@drawable/setting_brightness_seekbar_thumb" />
 
             <LinearLayout
+                android:id="@+id/brightness_image_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="53dp"
@@ -153,6 +156,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/setting_color_text"
                     style="@style/setting_section_title"
                     android:layout_marginBottom="20dp"
                     android:text="@string/color" />
@@ -194,6 +198,7 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/battery_percent"
                     style="@style/font_700"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -202,6 +207,7 @@
                     android:textSize="12dp" />
 
                 <TextView
+                    android:id="@+id/batter_time"
                     style="@style/font_700"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

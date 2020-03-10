@@ -22,12 +22,13 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.marcinmoskala.arcseekbar.ArcSeekBar;
-import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.util.Utils;
 import com.samsung.android.bling.account.AccountActivity;
@@ -44,31 +45,35 @@ import java.util.Queue;
 public class SettingActivity extends Activity {
     private static final String TAG = "Bling/SettingActivity";
 
-    private Button mGeneralModeBtn;
-    private Button mCheeringModeBtn;
-
     private LinearLayout mColorPickerLayout;
     private ColorPickerPreferenceManager mColorManager;
 
     private ImageButton mAccountBtn;
+
+    private TextView mLightModeTitle;
+    private Button mGeneralModeBtn;
+    private Button mCheeringModeBtn;
+    private boolean mIsCheeringMode = false;
+
+    private TextView mBrightnessTitle;
+    private ArcSeekBar mBrightnessSeekBar;
+    private LinearLayout mBrightnessImageLayout;
+    private int mBrightness = 0;
+
+    private TextView mColorTitle;
+    private LinearLayout mColorScrollView;
     private ImageButton mColorPickerBtn;
 
-    private ArcSeekBar mBrightnessSeekBar;
-    private SeekBar mBatterySeekBar;
-
-    private LinearLayout mColorScrollView;
-
     private AlertDialog mPickerDialog = null;
-
     private int mCurrentColor;
     private String mCurrentColorHex;
     private Queue<String> colorQueue = new LinkedList<>();
-    private int mBrightness = 0;
 
-    private boolean mIsCheeringMode = false;
+    private SeekBar mBatterySeekBar;
+    private TextView mBatteryPercent;
+    private TextView mBatteryTime;
 
     private boolean mBound = false;
-
     BlingService mService;
     ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -79,6 +84,7 @@ public class SettingActivity extends Activity {
             BTBinder binder = (BTBinder) service;
             mService = binder.getService();
             mBound = true;
+            setEnableView(true);
         }
 
         @Override
@@ -124,6 +130,9 @@ public class SettingActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+
+        setEnableView(Utils.isMyServiceRunning(this, BlingService.class));
+
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("bling.service.action.BT_CONNECTION_CHANGED"));
     }
@@ -140,12 +149,16 @@ public class SettingActivity extends Activity {
             String message = intent.getStringExtra("bt_status");
 
             if (message.equals("connect")) {
+                Log.d("jjh", "connect");
                 Intent Service = new Intent(getApplicationContext(), BlingService.class);
                 bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
+                // setEnableView(true); is in onServiceConnected()
             } else {
                 if (mBound && Utils.isMyServiceRunning(SettingActivity.this, BlingService.class)) {
+                    Log.d("jjh", "disconnect");
                     unbindService(mConnection);
                     mBound = false;
+                    setEnableView(false);
                 }
             }
         }
@@ -154,14 +167,18 @@ public class SettingActivity extends Activity {
     private void initView() {
         mAccountBtn = findViewById(R.id.setting_account_btn);
 
+        mLightModeTitle = findViewById(R.id.light_mode_title);
         mGeneralModeBtn = findViewById(R.id.general_light_btn);
         mCheeringModeBtn = findViewById(R.id.cheering_light_btn);
 
+        mBrightnessTitle = findViewById(R.id.brightness_title);
         mBrightnessSeekBar = findViewById(R.id.brightness_arc_seek_bar);
+        mBrightnessImageLayout = findViewById(R.id.brightness_image_layout);
 
         mColorManager = ColorPickerPreferenceManager.getInstance(getApplicationContext());
         mCurrentColor = mColorManager.getColor("blingColorPicker", getColor(R.color.colorPrimary));
 
+        mColorTitle = findViewById(R.id.setting_color_text);
         mColorScrollView = findViewById(R.id.color_scroll_view);
         setColorScrollView();
         setColorCheckbox(0);
@@ -171,6 +188,8 @@ public class SettingActivity extends Activity {
         mColorPickerBtn = findViewById(R.id.setting_color_picker_btn);
 
         mBatterySeekBar = findViewById(R.id.battery_seek_bar);
+        mBatteryPercent = findViewById(R.id.battery_percent);
+        mBatteryTime = findViewById(R.id.batter_time);
 
         findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
 
@@ -300,6 +319,57 @@ public class SettingActivity extends Activity {
             }
         });
         // ]] will be removed
+    }
+
+    private void setEnableView(boolean enable) {
+        if (enable) {
+            mLightModeTitle.setAlpha(1);
+            mGeneralModeBtn.setAlpha(1);
+            mCheeringModeBtn.setAlpha(1);
+            mGeneralModeBtn.setEnabled(true);
+            mCheeringModeBtn.setEnabled(true);
+
+            mBrightnessTitle.setAlpha(1);
+            mBrightnessImageLayout.setAlpha(1);
+            mBrightnessSeekBar.setAlpha(1);
+            mBrightnessSeekBar.setEnabled(true);
+
+            mColorTitle.setAlpha(1);
+            mColorScrollView.setAlpha(1);
+            mColorPickerBtn.setAlpha(1);
+            mBrightnessSeekBar.setEnabled(true);
+            mColorPickerBtn.setEnabled(true);
+
+            mBatterySeekBar.setProgress(38);
+            mBatteryPercent.setText("38%");
+            mBatteryTime.setVisibility(View.VISIBLE);
+
+            Toast.makeText(this, getString(R.string.setting_connected_toast), Toast.LENGTH_SHORT).show();
+        } else {
+            // set Alpha
+            mLightModeTitle.setAlpha(0.4f);
+            mGeneralModeBtn.setAlpha(0.4f);
+            mCheeringModeBtn.setAlpha(0.4f);
+            mGeneralModeBtn.setEnabled(false);
+            mCheeringModeBtn.setEnabled(false);
+
+            mBrightnessTitle.setAlpha(0.4f);
+            mBrightnessImageLayout.setAlpha(0.4f);
+            mBrightnessSeekBar.setAlpha(0.4f);
+            mBrightnessSeekBar.setEnabled(false);
+
+            mColorTitle.setAlpha(0.4f);
+            mColorScrollView.setAlpha(0.4f);
+            mColorPickerBtn.setAlpha(0.4f);
+            mBrightnessSeekBar.setEnabled(false);
+            mColorPickerBtn.setEnabled(false);
+
+            mBatterySeekBar.setProgress(0);
+            mBatteryPercent.setText(getString(R.string.battery_disconnected));
+            mBatteryTime.setVisibility(View.GONE);
+
+            Toast.makeText(this, getString(R.string.setting_disconnected_toast), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void showDialog() {
