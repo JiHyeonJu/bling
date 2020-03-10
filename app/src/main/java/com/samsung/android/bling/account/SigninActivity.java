@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.samsung.android.bling.MainActivity;
+import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
@@ -238,9 +239,9 @@ public class SigninActivity extends AppCompatActivity {
 
     private void onSignInClick(Intent intent, String id, boolean isStar) {
         if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
-                && BluetoothUtils.getServiceIntent() != null) {
+                && MyApplication.getServiceIntent() != null) {
             Log.d(TAG, "start service");
-            startForegroundService(BluetoothUtils.getServiceIntent());
+            startForegroundService(MyApplication.getServiceIntent());
         }
 
         Utils.savePreference(getApplicationContext(), "ID", id);

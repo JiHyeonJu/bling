@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
@@ -411,9 +412,9 @@ public class AccountActivity extends AppCompatActivity {
             if (mIsStar && Utils.isMyServiceRunning(this, BlingService.class)) {
                 SetMemberConnectionOff();
             } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class) && BluetoothUtils.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(this, BlingService.class) && MyApplication.getServiceIntent() != null) {
                     Log.d(TAG, "stop service");
-                    stopService(BluetoothUtils.getServiceIntent());
+                    stopService(MyApplication.getServiceIntent());
                 }
 
                 startActivity(new Intent(this, SigninActivity.class));
@@ -439,9 +440,9 @@ public class AccountActivity extends AppCompatActivity {
             if (mIsStar) {
                 SetMemberConnectionOff();
             } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class) && BluetoothUtils.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(this, BlingService.class) && MyApplication.getServiceIntent() != null) {
                     Log.d(TAG, "stop service");
-                    stopService(BluetoothUtils.getServiceIntent());
+                    stopService(MyApplication.getServiceIntent());
                 }
                 startActivity(new Intent(this, SigninActivity.class));
                 ActivityCompat.finishAffinity(this);
@@ -520,9 +521,9 @@ public class AccountActivity extends AppCompatActivity {
             public void onSuccess(int code, Object receivedData) {
                 Log.d(TAG, "SetStarConnection() update success! : " + code);
 
-                if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class) && BluetoothUtils.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class) && MyApplication.getServiceIntent() != null) {
                     Log.d(TAG, "stop service");
-                    stopService(BluetoothUtils.getServiceIntent());
+                    stopService(MyApplication.getServiceIntent());
                 }
 
                 startActivity(new Intent(AccountActivity.this, SigninActivity.class));

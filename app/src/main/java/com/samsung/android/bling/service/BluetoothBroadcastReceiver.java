@@ -9,6 +9,7 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.util.Utils;
 
@@ -36,14 +37,14 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    if (BluetoothUtils.getServiceIntent() != null) {
-                        context.stopService(BluetoothUtils.getServiceIntent());
+                    if (MyApplication.getServiceIntent() != null) {
+                        context.stopService(MyApplication.getServiceIntent());
                     }
                 }
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:  //블루투스 기기 연결
                 String id = Utils.getPreference(context.getApplicationContext(), "ID");
-                BluetoothUtils.setServiceIntent(new Intent(context, BlingService.class));
+                //BluetoothUtils.setServiceIntent(new Intent(context, BlingService.class));
                 //if (BT_NAME.equals(device.getName()) && !FIRST_LOGIN.equals(id)) {
                 if ((BT_NAME.equals(device.getName()) || "AirPods".equals(device.getName())) && !FIRST_LOGIN.equals(id)) {
                     Log.d(TAG, "ACTION_ACL_CONNECTED : Start service");
@@ -51,7 +52,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "connect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    context.startForegroundService(BluetoothUtils.getServiceIntent());
+                    context.startForegroundService(MyApplication.getServiceIntent());
                 }
                 break;
 
@@ -63,8 +64,8 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    if (BluetoothUtils.getServiceIntent() != null) {
-                        context.stopService(BluetoothUtils.getServiceIntent());
+                    if (MyApplication.getServiceIntent() != null) {
+                        context.stopService(MyApplication.getServiceIntent());
                     }
                 }
                 break;

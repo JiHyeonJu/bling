@@ -27,18 +27,6 @@ public class BluetoothUtils {
     public static final String BT_NAME = "JBL Pulse 3";    //7C:96:D2:25:DE:1D
     public static final String BT_ADDRESS = "D0:E3:25:85:F7:BE";
 
-    public static Intent serviceIntent;
-
-    public static void setServiceIntent(Intent intent) {
-        if (serviceIntent == null) {
-            serviceIntent = intent;
-        }
-    }
-
-    public static Intent getServiceIntent() {
-        return serviceIntent;
-    }
-
     public static void checkBluetooth(Context context) {
         if (BluetoothAdapter.getDefaultAdapter() == null) {
             Toast.makeText(context, "Does not support.", Toast.LENGTH_LONG).show();
