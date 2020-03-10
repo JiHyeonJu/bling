@@ -46,5 +46,4 @@
     <string name="service_notification_msg">The Bling is currently waiting for the star.</string>
     <string name="login_error_toast">The ID or password is incorrect. Please try again.</string>
     <string name="setting_disconnected_toast">The Bling device is not connected</string>
-    <string name="setting_connected_toast">The Bling device is connected</string>
 </resources>

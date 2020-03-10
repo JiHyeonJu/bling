@@ -343,8 +343,6 @@ public class SettingActivity extends Activity {
             mBatterySeekBar.setProgress(38);
             mBatteryPercent.setText("38%");
             mBatteryTime.setVisibility(View.VISIBLE);
-
-            Toast.makeText(this, getString(R.string.setting_connected_toast), Toast.LENGTH_SHORT).show();
         } else {
             // set Alpha
             mLightModeTitle.setAlpha(0.4f);
