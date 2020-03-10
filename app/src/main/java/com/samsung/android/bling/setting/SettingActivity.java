@@ -63,6 +63,7 @@ public class SettingActivity extends Activity {
     private TextView mColorTitle;
     private LinearLayout mColorScrollView;
     private ImageButton mColorPickerBtn;
+    private View mScrollViewDivider;
 
     private AlertDialog mPickerDialog = null;
     private int mCurrentColor;
@@ -185,6 +186,7 @@ public class SettingActivity extends Activity {
 
         mColorPickerLayout = findViewById(R.id.color_picker_layout);
         mColorPickerBtn = findViewById(R.id.setting_color_picker_btn);
+        mScrollViewDivider = findViewById(R.id.scroll_view_divider);
 
         mBatterySeekBar = findViewById(R.id.battery_seek_bar);
         mBatteryPercent = findViewById(R.id.battery_percent);
@@ -335,8 +337,8 @@ public class SettingActivity extends Activity {
 
             mColorTitle.setAlpha(1);
             mColorScrollView.setAlpha(1);
+            mScrollViewDivider.setAlpha(1);
             mColorPickerBtn.setImageAlpha(1);
-            mBrightnessSeekBar.setEnabled(true);
             mColorPickerBtn.setEnabled(true);
 
             mBatterySeekBar.setProgress(38);
@@ -357,8 +359,8 @@ public class SettingActivity extends Activity {
 
             mColorTitle.setAlpha(0.4f);
             mColorScrollView.setAlpha(0.4f);
+            mScrollViewDivider.setAlpha(0.4f);
             mColorPickerBtn.setAlpha(0.4f);
-            mBrightnessSeekBar.setEnabled(false);
             mColorPickerBtn.setEnabled(false);
 
             mBatterySeekBar.setProgress(0);
@@ -444,7 +446,7 @@ public class SettingActivity extends Activity {
                 Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), color);
                 setColorScrollOnClickListener(i, true);
             } else {
-                Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), getColor(R.color.white));
+                Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), getColor(R.color.lightGray));
                 setColorScrollOnClickListener(i, false);
             }
         }

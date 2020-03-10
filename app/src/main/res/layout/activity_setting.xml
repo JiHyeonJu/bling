@@ -169,12 +169,20 @@
                     <!--todo : color bar-->
                     <include layout="@layout/setting_color_scroll_view" />
 
+                    <View
+                        android:id="@+id/scroll_view_divider"
+                        android:layout_width="1dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:background="#DADADA" />
+
                     <ImageButton
                         android:id="@+id/setting_color_picker_btn"
                         android:layout_width="38dp"
                         android:layout_height="38dp"
                         android:layout_gravity="end"
-                        android:layout_marginHorizontal="31dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="31dp"
                         android:background="@drawable/bling_setting_color_custom" />
                 </LinearLayout>
 
