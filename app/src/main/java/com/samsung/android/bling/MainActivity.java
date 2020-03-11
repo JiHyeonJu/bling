@@ -36,8 +36,6 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.util.HashMap;
-
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Bling/MainActivity";
 
@@ -172,17 +170,9 @@ public class MainActivity extends AppCompatActivity {
 
                 setStatusView("connect".equals(message), false);
             } else if (action.equals("bling.service.action.STAR_CONNECTION_CHANGED")) {
-                if (!mIsStar) {
-                    // 팬의 서비스가 돌고 있을때 스타의 연결관리를 체크, 스타멤버는 알아서 업데이트될거라 따로 해줄 필요 없음
-                    message = intent.getStringExtra("msg");
+                message = intent.getStringExtra("msg");
 
-                    boolean isOn = "on".equals(message);
-                    setStatusView(isOn, true);
-                    if (isOn) {
-                        Utils.showNotification(MainActivity.this, false,
-                                1001, "Bling", getString(R.string.star_online_notification_msg));
-                    }
-                }
+                setStatusView("on".equals(message), true);
             }
             Log.d(TAG, "action: " + action + ", message: " + message);
         }

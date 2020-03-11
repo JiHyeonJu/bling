@@ -195,7 +195,6 @@ public class Utils {
     }
 
     public static boolean isMyServiceRunning(Context context, Class<?> serviceClass) {
-        Log.d(TAG, serviceClass.getName());
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             Log.d(TAG, serviceClass.getName() + ", " + service.service.getClassName());

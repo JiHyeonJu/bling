@@ -1,9 +1,5 @@
 package com.samsung.android.bling.service;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -11,16 +7,11 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -30,11 +21,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
-import com.samsung.android.bling.account.SigninActivity;
 import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.util.Utils;
-import com.skydoves.colorpickerview.preference.ColorPickerPreferenceManager;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -162,6 +151,23 @@ public class BlingService extends Service {
         startForeground(1002, notificationBuilder.build());
     }
 
+    /*Boolean Go = true;
+    Thread thread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            int i = 1;
+
+            while (Go) {
+                Log.d("jjh", "i : " + i++);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });*/
+
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
@@ -178,6 +184,9 @@ public class BlingService extends Service {
         }
 
         updateStarStatus(mIsStar, mStarId, "off");
+
+        /*Log.d("jjh", "stop thread");
+        Go = false;*/
 
         super.onDestroy();
     }
@@ -196,6 +205,8 @@ public class BlingService extends Service {
             //Toast.makeText(this, "no target device", Toast.LENGTH_SHORT).show();
             Log.d(TAG, "NO DEV");
         }
+
+        //thread.start();
 
         return START_STICKY;
     }
@@ -321,6 +332,14 @@ public class BlingService extends Service {
                         JsonObject jsonObject = (JsonObject) jsonParser.parse(message.toString());
 
                         String data = jsonObject.get("msg_data").getAsString();
+
+                        if (!mIsStar) {
+                            // 팬의 서비스가 돌고 있을때 노티 보여줌
+                            if ("on".equals(data)) {
+                                Utils.showNotification(BlingService.this, false,
+                                        1001, "Bling", getString(R.string.star_online_notification_msg));
+                            }
+                        }
 
                         newIntent = new Intent("bling.service.action.STAR_CONNECTION_CHANGED");
                         newIntent.putExtra("msg", data);
