@@ -44,6 +44,7 @@
     <string name="baseUrl">https://52.79.216.28:8080/v1/</string>
 
     <string name="service_notification_msg">The Bling is currently waiting for the star.</string>
+    <string name="star_online_notification_msg">The star is online.</string>
     <string name="login_error_toast">The ID or password is incorrect. Please try again.</string>
     <string name="setting_disconnected_toast">The Bling device is not connected</string>
 </resources>

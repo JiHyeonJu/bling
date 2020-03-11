@@ -172,9 +172,17 @@ public class MainActivity extends AppCompatActivity {
 
                 setStatusView("connect".equals(message), false);
             } else if (action.equals("bling.service.action.STAR_CONNECTION_CHANGED")) {
-                message = intent.getStringExtra("msg");
+                if (mIsStar) {
+                    // 팬의 서비스가 돌고 있을때 스타의 연결관리를 체크, 스타멤버는 알아서 업데이트될거라 따로 해줄 필요 없음
+                    message = intent.getStringExtra("msg");
 
-                setStatusView("on".equals(message), true);
+                    boolean isOn = "on".equals(message);
+                    setStatusView(isOn, true);
+                    if (isOn) {
+                        Utils.showNotification(MainActivity.this, false,
+                                1001, "Bling", getString(R.string.star_online_notification_msg));
+                    }
+                }
             }
             Log.d(TAG, "action: " + action + ", message: " + message);
         }
@@ -193,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mqttSubscribe() {
+        // 서비스가 돌고 있지않을때 스타의 연결관리를 체크
         if (!Utils.isMyServiceRunning(this, BlingService.class)) {
             mqttConnect();
 
@@ -212,8 +221,13 @@ public class MainActivity extends AppCompatActivity {
 
                         String data = jsonObject.get("msg_data").getAsString();
 
-                        Log.d(TAG, "Mqtt messageArrived() data : " + data);
-                        setStatusView("on".equals(data), true);
+                        boolean isOn = "on".equals(data);
+                        setStatusView(isOn, true);
+                        if (isOn) {
+                            Utils.showNotification(MainActivity.this, false,
+                                    1001, "Bling", getString(R.string.star_online_notification_msg));
+                        }
+                        Log.d(TAG, "Mqtt messageArrived() ison : " + isOn);
                     }
 
                     @Override

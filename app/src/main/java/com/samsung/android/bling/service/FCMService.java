@@ -76,7 +76,7 @@ public class FCMService extends FirebaseMessagingService {
      * @param messageBody FCM message body received.
      */
     private void sendNotification(String messageBody) {
-        Utils.showNotification(this, 1001, "FCM_test", messageBody);
+        Utils.showNotification(this, false, 1001, "FCM_test", messageBody);
     }
 
     private void sendMessageToActivity(String messages) {

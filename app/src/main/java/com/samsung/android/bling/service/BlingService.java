@@ -158,7 +158,7 @@ public class BlingService extends Service {
 
         String msg = getString(R.string.service_notification_msg);
         NotificationCompat.Builder notificationBuilder = Utils.showNotification(this,
-                1002, "Bling", msg);
+                true, 1002, "Bling", msg);
         startForeground(1002, notificationBuilder.build());
     }
 

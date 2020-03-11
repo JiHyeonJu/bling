@@ -49,7 +49,7 @@ import okhttp3.OkHttpClient;
 public class Utils {
     private static final String TAG = "Bling/Utils";
 
-    public static NotificationCompat.Builder showNotification(Context context, int notificationId, String title, String messageBody) {
+    public static NotificationCompat.Builder showNotification(Context context, boolean isService, int notificationId, String title, String messageBody) {
         Intent intent = new Intent(context, SigninActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
@@ -80,8 +80,10 @@ public class Utils {
             notificationManager.createNotificationChannel(channel);
         }
 
+        if (!isService) {
+            notificationManager.notify(notificationId /* ID of notification */, notificationBuilder.build());
+        }
         return notificationBuilder;
-        //notificationManager.notify(notificationId /* ID of notification */, notificationBuilder.build());
     }
 
 
