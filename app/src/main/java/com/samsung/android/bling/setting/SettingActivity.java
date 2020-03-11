@@ -150,13 +150,13 @@ public class SettingActivity extends Activity {
             String message = intent.getStringExtra("bt_status");
 
             if (message.equals("connect")) {
-                Log.d("jjh", "connect");
+                Log.d(TAG, "connect");
                 Intent Service = new Intent(getApplicationContext(), BlingService.class);
                 bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
                 // setEnableView(true); is in onServiceConnected()
             } else {
                 if (mBound && Utils.isMyServiceRunning(SettingActivity.this, BlingService.class)) {
-                    Log.d("jjh", "disconnect");
+                    Log.d(TAG, "disconnect");
                     unbindService(mConnection);
                     mBound = false;
                     setEnableView(false);
@@ -461,13 +461,13 @@ public class SettingActivity extends Activity {
     private void setColorScrollOnClickListener(int index, boolean clickable) {
         if (clickable) {
             ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
-                Log.d(TAG, "jjh clicked" + index);
+                Log.d(TAG, "color clicked" + index);
                 setColorCheckbox(index);
             });
         } else {
             ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
                 // do nothing
-                Log.d(TAG, "jjh do not acting" + index);
+                Log.d(TAG, "do not acting" + index);
             });
         }
     }

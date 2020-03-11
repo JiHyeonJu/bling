@@ -16,7 +16,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        Log.d(TAG, "jjh");
+        Log.d(TAG, "jjh Application start");
         serviceIntent = new Intent(getApplicationContext(), BlingService.class);
     }
 

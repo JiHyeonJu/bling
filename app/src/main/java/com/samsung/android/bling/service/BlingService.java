@@ -299,7 +299,7 @@ public class BlingService extends Service {
     }
 
     public void mqttSubscribe() {
-        Log.d("jjh", "mqttSubscribe");
+        Log.d(TAG, "mqttSubscribe");
         mqttConnect();
 
         try {

@@ -43,7 +43,7 @@ public class SigninActivity extends AppCompatActivity {
     private ImageButton mShowPasswordBtn;
 
     private Button mSigninBtn;
-    TextView mSignupView;
+    private TextView mSignupView;
 
     private RetroClient retroClient;
 

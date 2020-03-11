@@ -24,7 +24,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d("jjh", action);
+        Log.d(TAG, action);
         final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
         Intent newIntent = new Intent("bling.service.action.BT_CONNECTION_CHANGED");
