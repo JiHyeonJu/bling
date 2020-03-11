@@ -24,7 +24,7 @@ public class BluetoothUtils {
     public static final UUID TX_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
     public static final int REQUEST_ENABLE_BT = 1;
-    public static final String BT_NAME = "JBL Pulse 3";    //7C:96:D2:25:DE:1D
+    public static final String BT_NAME = "AirPods";    //7C:96:D2:25:DE:1D
     public static final String BT_ADDRESS = "D0:E3:25:85:F7:BE";
 
     public static void checkBluetooth(Context context) {
@@ -65,6 +65,22 @@ public class BluetoothUtils {
         BluetoothDevice mDevice = getTargetDevice();
 
         return mDevice != null;
+    }
+
+    public static boolean isBlingConnected() {
+        BluetoothDevice mDevice = getTargetDevice();
+
+        if (mDevice != null) {
+            try {
+                Method method = mDevice.getClass().getMethod("isConnected", (Class[]) null);
+                boolean connected = (boolean) method.invoke(mDevice, (Object[]) null);
+                return connected;
+            } catch (Exception e) {
+                Log.d(TAG, e.getMessage());
+            }
+        }
+
+        return false;
     }
 
     public static void unpairDevice() {

@@ -37,9 +37,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    if (MyApplication.getServiceIntent() != null) {
-                        context.stopService(MyApplication.getServiceIntent());
-                    }
+                    context.stopService(MyApplication.getServiceIntent());
                 }
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:  //블루투스 기기 연결
@@ -64,9 +62,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    if (MyApplication.getServiceIntent() != null) {
-                        context.stopService(MyApplication.getServiceIntent());
-                    }
+                    context.stopService(MyApplication.getServiceIntent());
                 }
                 break;
         }

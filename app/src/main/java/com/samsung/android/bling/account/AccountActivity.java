@@ -412,7 +412,7 @@ public class AccountActivity extends AppCompatActivity {
             if (mIsStar && Utils.isMyServiceRunning(this, BlingService.class)) {
                 SetMemberConnectionOff();
             } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class) && MyApplication.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(this, BlingService.class)) {
                     Log.d(TAG, "stop service");
                     stopService(MyApplication.getServiceIntent());
                 }
@@ -440,7 +440,7 @@ public class AccountActivity extends AppCompatActivity {
             if (mIsStar) {
                 SetMemberConnectionOff();
             } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class) && MyApplication.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(this, BlingService.class)) {
                     Log.d(TAG, "stop service");
                     stopService(MyApplication.getServiceIntent());
                 }
@@ -521,7 +521,7 @@ public class AccountActivity extends AppCompatActivity {
             public void onSuccess(int code, Object receivedData) {
                 Log.d(TAG, "SetStarConnection() update success! : " + code);
 
-                if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class) && MyApplication.getServiceIntent() != null) {
+                if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class)) {
                     Log.d(TAG, "stop service");
                     stopService(MyApplication.getServiceIntent());
                 }

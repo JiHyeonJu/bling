@@ -54,7 +54,7 @@ public class RewardDetailActivity extends Activity {
 
         ProgressBar progressBar = findViewById(R.id.loading_progress_bar);
 
-        Glide.with(this).load(mMemberUrl)
+        /*Glide.with(this).load(mMemberUrl)
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -66,7 +66,7 @@ public class RewardDetailActivity extends Activity {
                         progressBar.setVisibility(View.GONE);
                         return false;
                     }
-                }).into(memberImageView);
+                }).into(memberImageView);*/
 
         NameView.setText(mMemberName);
         StarView.setText(mStarName);

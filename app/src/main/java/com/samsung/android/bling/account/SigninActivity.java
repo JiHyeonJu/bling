@@ -238,8 +238,9 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void onSignInClick(Intent intent, String id, boolean isStar) {
+        // todo: must be changed
         if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
-                && MyApplication.getServiceIntent() != null) {
+                && BluetoothUtils.isBlingConnected()) {
             Log.d(TAG, "start service");
             startForegroundService(MyApplication.getServiceIntent());
         }
