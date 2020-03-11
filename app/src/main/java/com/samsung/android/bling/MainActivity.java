@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
 
                 setStatusView("connect".equals(message), false);
             } else if (action.equals("bling.service.action.STAR_CONNECTION_CHANGED")) {
-                if (mIsStar) {
+                if (!mIsStar) {
                     // 팬의 서비스가 돌고 있을때 스타의 연결관리를 체크, 스타멤버는 알아서 업데이트될거라 따로 해줄 필요 없음
                     message = intent.getStringExtra("msg");
 
