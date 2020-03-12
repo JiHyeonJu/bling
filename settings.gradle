@@ -1,2 +1,2 @@
 rootProject.name='Bling'
-include ':app'
+include ':app', ':colorpicker'

@@ -47,6 +47,13 @@
             </intent-filter>
         </receiver>
 
+        <!--<receiver android:name=".service.PackageDataClearedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>-->
+
         <service
             android:name=".service.BlingService"
             android:enabled="true"

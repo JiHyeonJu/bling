@@ -53,41 +53,12 @@
 
     </LinearLayout>
 
-    <com.skydoves.colorpickerview.ColorPickerView
-        android:id="@+id/color_picker_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <cn.cricin.colorpicker.CircleColorPicker
+        android:id="@+id/color_picker_circle"
+        android:layout_width="310dp"
+        android:layout_height="310dp"
         android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="33dp"
-        android:layout_marginBottom="57dp"
-        android:layout_weight="1"
-        app:alpha_flag="1"
-        app:alpha_selector="1"
-        app:palette="@drawable/bling_colorpicker_palette"
-        app:selector="@drawable/color_picker_wheel" />
-
-    <!--<FrameLayout
-        android:id="@+id/brightness_slide_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginHorizontal="41dp"
-        android:layout_marginBottom="58dp"
-        android:visibility="gone">
-
-        <com.skydoves.colorpickerview.sliders.BrightnessSlideBar
-            android:id="@+id/brightness_slide"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            app:borderColor_BrightnessSlider="@color/white"
-            app:borderSize_BrightnessSlider="0"
-            app:selector_BrightnessSlider="@drawable/bling_brightness_wheel_with_padding" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:background="@drawable/bar_clip" />
-    </FrameLayout>-->
+        android:layout_marginBottom="57dp" />
 
     <LinearLayout
         android:layout_width="match_parent"

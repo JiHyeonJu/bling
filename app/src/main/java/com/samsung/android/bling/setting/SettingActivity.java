@@ -34,19 +34,16 @@ import com.samsung.android.bling.util.Utils;
 import com.samsung.android.bling.account.AccountActivity;
 import com.samsung.android.bling.service.BlingService;
 import com.samsung.android.bling.service.BlingService.BTBinder;
-import com.skydoves.colorpickerview.ColorEnvelope;
-import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
-import com.skydoves.colorpickerview.preference.ColorPickerPreferenceManager;
 
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
+
+import cn.cricin.colorpicker.CircleColorPicker;
+import cn.cricin.colorpicker.OnValueChangeListener;
 
 public class SettingActivity extends Activity {
     private static final String TAG = "Bling/SettingActivity";
-
-    private LinearLayout mColorPickerLayout;
-    private ColorPickerPreferenceManager mColorManager;
 
     private ImageButton mAccountBtn;
 
@@ -61,6 +58,7 @@ public class SettingActivity extends Activity {
     private int mBrightness = 0;
 
     private TextView mColorTitle;
+    private LinearLayout mColorPickerLayout;
     private LinearLayout mColorScrollView;
     private ImageButton mColorPickerBtn;
     private View mScrollViewDivider;
@@ -176,17 +174,18 @@ public class SettingActivity extends Activity {
         mBrightnessSeekBar = findViewById(R.id.brightness_arc_seek_bar);
         mBrightnessImageLayout = findViewById(R.id.brightness_image_layout);
 
-        mColorManager = ColorPickerPreferenceManager.getInstance(getApplicationContext());
-        mCurrentColor = mColorManager.getColor("blingColorPicker", getColor(R.color.colorPrimary));
-
         mColorTitle = findViewById(R.id.setting_color_text);
-        mColorScrollView = findViewById(R.id.color_scroll_view);
-        setColorScrollView();
-        setColorCheckbox(0);
-
         mColorPickerLayout = findViewById(R.id.color_picker_layout);
+        mColorScrollView = findViewById(R.id.color_scroll_view);
         mColorPickerBtn = findViewById(R.id.setting_color_picker_btn);
         mScrollViewDivider = findViewById(R.id.scroll_view_divider);
+
+        int selectedColorIndex = Integer.parseInt(Utils.getPreference(getApplicationContext(), "selectedColorIndex"));
+        if (selectedColorIndex == -1) {
+            selectedColorIndex = 0;
+        }
+        setColorScrollView();
+        setColorCheckbox(selectedColorIndex);
 
         mBatterySeekBar = findViewById(R.id.battery_seek_bar);
         mBatteryPercent = findViewById(R.id.battery_percent);
@@ -323,7 +322,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setEnableView(boolean enable) {
-        if (enable) {
+        if (true) {
             mLightModeTitle.setAlpha(1);
             mGeneralModeBtn.setAlpha(1);
             mCheeringModeBtn.setAlpha(1);
@@ -378,31 +377,26 @@ public class SettingActivity extends Activity {
     }
 
     private void initColorPickerView() {
-        ColorPickerView colorPickerView = mPickerDialog.findViewById(R.id.color_picker_view);
-        colorPickerView.setPreferenceName("blingColorPicker");
-
-        mColorManager.restoreColorPickerData(colorPickerView);
-        colorPickerView.setPureColor(mCurrentColor);
-        colorPickerView.selectByHsv(mCurrentColor);
-
         View newColorView = mPickerDialog.findViewById(R.id.new_color);
         Utils.setDrawableColor(mPickerDialog.findViewById(R.id.prev_color), mCurrentColor);
+        Utils.setDrawableColor(newColorView, mCurrentColor);
 
-        colorPickerView.setColorListener(new ColorEnvelopeListener() {
+        CircleColorPicker circleColorPicker = mPickerDialog.findViewById(R.id.color_picker_circle);
+        circleColorPicker.setColor(mCurrentColor);
+        circleColorPicker.setOnValueChangeListener(new OnValueChangeListener() {
             @Override
-            public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
-                mCurrentColorHex = "#" + envelope.getHexCode();
+            public void onValueChanged(View view, int newColor) {
+                mCurrentColorHex = "#" + Utils.getHexCode(newColor);
 
                 float[] hsv = new float[3];
                 if (mBound) {
-                    Color.colorToHSV(envelope.getColor(), hsv);
+                    Color.colorToHSV(newColor, hsv);
                     hsv[2] = (float) mBrightness / 100000000;
 
                     mService.sendColorToLed(Color.HSVToColor(hsv));
                 }
-                Utils.setDrawableColor(newColorView, envelope.getColor());
-                //newColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
-                Log.d(TAG, "color : #" + envelope.getHexCode());
+                Utils.setDrawableColor(newColorView, newColor);
+                Log.d(TAG, "color : " + mCurrentColorHex);
             }
         });
 
@@ -420,12 +414,9 @@ public class SettingActivity extends Activity {
 
         mPickerDialog.findViewById(R.id.done).setOnClickListener((v -> {
             if (true) {
-                mColorManager.saveColorPickerData(colorPickerView);
-
                 if (colorQueue.size() == 6) {
                     colorQueue.remove();
                 }
-
                 colorQueue.offer(mCurrentColorHex);
                 Utils.setList(getApplicationContext(), "savedColor", colorQueue);
 
@@ -495,7 +486,7 @@ public class SettingActivity extends Activity {
             }
         }
         colorQueue = Utils.getList(getApplicationContext(), "savedColor");
-        mColorManager.setColor("blingColorPicker", mCurrentColor);
+        Utils.savePreference(this, "selectedColorIndex", String.valueOf(index));
 
         ImageView checkboxView = (ImageView) ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(1);
 

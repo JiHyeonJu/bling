@@ -2,7 +2,6 @@ package com.samsung.android.bling.account;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -28,15 +27,12 @@ import com.samsung.android.bling.Retrofit.RetroClient;
 import com.samsung.android.bling.data.StarMemberInfoVo;
 import com.samsung.android.bling.data.UserInfoVo;
 import com.samsung.android.bling.service.BlingService;
-import com.samsung.android.bling.service.BluetoothBroadcastReceiver;
-import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.util.Utils;
-import com.skydoves.colorpickerview.ColorEnvelope;
-import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
-import com.skydoves.colorpickerview.preference.ColorPickerPreferenceManager;
 
 import java.util.HashMap;
+
+import cn.cricin.colorpicker.CircleColorPicker;
+import cn.cricin.colorpicker.OnValueChangeListener;
 
 public class AccountActivity extends AppCompatActivity {
 
@@ -54,7 +50,6 @@ public class AccountActivity extends AppCompatActivity {
     private Button mSignoutBtn;
 
     private AlertDialog mAlertDialog;
-    private ColorPickerPreferenceManager mColorManager;
     private int mCurrentColor;
     private String mCurrentColorHex;
 
@@ -97,7 +92,8 @@ public class AccountActivity extends AppCompatActivity {
 
                     mUserIdView.setText(mUserId);
                     mUserNameView.setText(mName);
-                    mColorView.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor(mColor)));
+                    mCurrentColor = Color.parseColor(mColor);
+                    mColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
                 }
 
                 @Override
@@ -137,10 +133,6 @@ public class AccountActivity extends AppCompatActivity {
 
     private void initView() {
         findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
-
-        if (mIsStar) {
-            mColorManager = ColorPickerPreferenceManager.getInstance(getApplicationContext());
-        }
 
         mUserIdView = findViewById(R.id.user_id_view);
         mUserNameView = findViewById(R.id.user_name_view);
@@ -357,29 +349,21 @@ public class AccountActivity extends AppCompatActivity {
     }
 
     private void initColorPickerView() {
-        ColorPickerView colorPickerView = mAlertDialog.findViewById(R.id.color_picker_view);
-        colorPickerView.setPreferenceName("StarMemberColorPicker");
-
-        /*mAlertDialog.findViewById(R.id.brightness_slide_layout).setVisibility(View.VISIBLE);
-
-        BrightnessSlideBar brightnessSlideBar = mAlertDialog.findViewById(R.id.brightness_slide);
-        brightnessSlideBar.setPreferenceName("StarMemberColorPicker");
-        colorPickerView.attachBrightnessSlider(brightnessSlideBar);*/
-
-        mColorManager.restoreColorPickerData(colorPickerView);
-
         View newColorView = mAlertDialog.findViewById(R.id.new_color);
-        Utils.setDrawableColor(mAlertDialog.findViewById(R.id.prev_color), Color.parseColor(mColor));
+        Utils.setDrawableColor(mAlertDialog.findViewById(R.id.prev_color), mCurrentColor);
+        Utils.setDrawableColor(newColorView, mCurrentColor);
 
-        colorPickerView.setColorListener(new ColorEnvelopeListener() {
+        CircleColorPicker circleColorPicker = mAlertDialog.findViewById(R.id.color_picker_circle);
+        circleColorPicker.setColor(mCurrentColor);
+        circleColorPicker.setOnValueChangeListener(new OnValueChangeListener() {
             @Override
-            public void onColorSelected(ColorEnvelope envelope, boolean fromUser) {
-                mCurrentColor = envelope.getColor();
-                mCurrentColorHex = "#" + envelope.getHexCode();
+            public void onValueChanged(View view, int newColor) {
+                mCurrentColorHex = "#" + Utils.getHexCode(newColor);
+                mCurrentColor = newColor;
 
                 Utils.setDrawableColor(newColorView, mCurrentColor);
 
-                Log.d(TAG, "color : #" + envelope.getHexCode());
+                Log.d(TAG, "color : " + mCurrentColorHex);
             }
         });
 
@@ -388,7 +372,6 @@ public class AccountActivity extends AppCompatActivity {
         }));
 
         mAlertDialog.findViewById(R.id.done).setOnClickListener((v -> {
-            mColorManager.saveColorPickerData(colorPickerView);
             mColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
 
             updateData(setParameters(mUserId, mPassword, mName, mCurrentColorHex, mStarId));

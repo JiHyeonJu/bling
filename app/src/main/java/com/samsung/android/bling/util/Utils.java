@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -29,12 +30,13 @@ import androidx.core.graphics.ColorUtils;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.samsung.android.bling.MainActivity;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.account.SigninActivity;
 
+import java.lang.reflect.Field;
 import java.security.cert.CertificateException;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Queue;
 
 import javax.net.ssl.HostnameVerifier;
@@ -44,6 +46,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+//import cn.cricin.colorpicker.ThumbDrawable;
 import okhttp3.OkHttpClient;
 
 public class Utils {
@@ -262,6 +265,14 @@ public class Utils {
         drawable.setColor(Color);
     }
 
+    public static String getHexCode(int color) {
+        int a = Color.alpha(color);
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
+        return String.format(Locale.getDefault(), "%02X%02X%02X%02X", a, r, g, b);
+    }
+
     public static AlertDialog showDialog(Activity activity, int resource) {
         View view = LayoutInflater.from(activity).inflate(resource, null);
 
@@ -327,5 +338,42 @@ public class Utils {
         JsonObject jsonObject = (JsonObject) jsonParser.parse(str);
 
         return jsonObject.toString();
+    }
+
+    public static void setFinalStatic() {
+        /*field.setAccessible(true);
+
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+        field.set(null, newValue);*/
+
+        /*try {
+            Class clazz = ThumbDrawable.class;
+            Field fld = clazz.getDeclaredField("DEFAULT_INNER_SIZE");
+            fld.setAccessible(true);
+            fld.set(null, 100);
+            Log.d("jjh~", "Class name: " + clazz.getName());
+            Log.d("jjh~", "" + fld.get(null));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+
+        /*try {
+            ThumbDrawable t = new ThumbDrawable(context);
+            Class clazz = ThumbDrawable.class;
+            Field fld = clazz.getDeclaredField("mPressed");
+            fld.setAccessible(true);
+            fld.set(t, true);
+
+            *//*Method method = clazz.getDeclaredMethod("draw", Canvas.class);
+            method.invoke(t, (Object[]) null);*//*
+
+            Log.d("jjh~", "Class name: " + clazz.getName());
+            Log.d("jjh~", "" + fld.get(t));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
     }
 }
