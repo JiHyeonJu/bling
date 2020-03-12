@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -36,7 +37,6 @@ import com.samsung.android.bling.service.BlingService;
 import com.samsung.android.bling.service.BlingService.BTBinder;
 
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Queue;
 
 import cn.cricin.colorpicker.CircleColorPicker;
@@ -59,9 +59,11 @@ public class SettingActivity extends Activity {
 
     private TextView mColorTitle;
     private LinearLayout mColorPickerLayout;
-    private LinearLayout mColorScrollView;
-    private ImageButton mColorPickerBtn;
-    private View mScrollViewDivider;
+    private HorizontalScrollView mColorHorizontalScrollView;
+    private LinearLayout mColorScrollLayout;
+    private ImageView mColorPickerBtn;
+    private View mScrollViewStartDivider;
+    private View mScrollViewEndDivider;
 
     private AlertDialog mPickerDialog = null;
     private int mCurrentColor;
@@ -176,9 +178,23 @@ public class SettingActivity extends Activity {
 
         mColorTitle = findViewById(R.id.setting_color_text);
         mColorPickerLayout = findViewById(R.id.color_picker_layout);
-        mColorScrollView = findViewById(R.id.color_scroll_view);
+        mColorHorizontalScrollView = findViewById(R.id.color_horizontal_scroll_view);
+        mColorScrollLayout = findViewById(R.id.color_scroll_layout);
         mColorPickerBtn = findViewById(R.id.setting_color_picker_btn);
-        mScrollViewDivider = findViewById(R.id.scroll_view_divider);
+        mScrollViewStartDivider = findViewById(R.id.scroll_view_start_divider);
+        mScrollViewEndDivider = findViewById(R.id.scroll_view_end_divider);
+
+        mColorHorizontalScrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollX > 0) {
+                    mScrollViewStartDivider.setVisibility(View.VISIBLE);
+                } else {
+                    mScrollViewStartDivider.setVisibility(View.INVISIBLE);
+                }
+                //Log.d(TAG, "jjh!" + scrollX + "," + scrollY + "," + oldScrollX + "," + oldScrollY);
+            }
+        });
 
         int selectedColorIndex = Integer.parseInt(Utils.getPreference(getApplicationContext(), "selectedColorIndex"));
         if (selectedColorIndex == -1) {
@@ -322,7 +338,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setEnableView(boolean enable) {
-        if (true) {
+        if (enable) {
             mLightModeTitle.setAlpha(1);
             mGeneralModeBtn.setAlpha(1);
             mCheeringModeBtn.setAlpha(1);
@@ -335,11 +351,15 @@ public class SettingActivity extends Activity {
             mBrightnessSeekBar.setEnabled(true);
 
             mColorTitle.setAlpha(1);
-            mColorScrollView.setAlpha(1);
-            mScrollViewDivider.setAlpha(1);
-            mColorPickerBtn.setImageAlpha(1);
+            mColorScrollLayout.setAlpha(1);
+            mScrollViewStartDivider.setAlpha(1);
+            mScrollViewEndDivider.setAlpha(1);
+            mColorPickerBtn.setImageAlpha(255);
             mColorPickerBtn.setEnabled(true);
-
+            for (int i = 0; i < 8; i++) {
+                setColorScrollOnClickListener(i, true);
+            }
+            mColorHorizontalScrollView.setOnTouchListener(null);
             mBatterySeekBar.setProgress(38);
             mBatteryPercent.setText("38%");
             mBatteryTime.setVisibility(View.VISIBLE);
@@ -357,10 +377,18 @@ public class SettingActivity extends Activity {
             mBrightnessSeekBar.setEnabled(false);
 
             mColorTitle.setAlpha(0.4f);
-            mColorScrollView.setAlpha(0.4f);
-            mScrollViewDivider.setAlpha(0.4f);
-            mColorPickerBtn.setAlpha(0.4f);
+            mColorScrollLayout.setAlpha(0.4f);
+            mScrollViewStartDivider.setAlpha(0.4f);
+            mScrollViewEndDivider.setAlpha(0.4f);
+            mColorPickerBtn.setImageAlpha(102);
             mColorPickerBtn.setEnabled(false);
+            mColorScrollLayout.setEnabled(false);
+            for (int i = 0; i < 8; i++) {
+                setColorScrollOnClickListener(i, false);
+            }
+            mColorHorizontalScrollView.setOnTouchListener((v, event) -> {
+                return true;
+            });
 
             mBatterySeekBar.setProgress(0);
             mBatteryPercent.setText(getString(R.string.battery_disconnected));
@@ -434,16 +462,16 @@ public class SettingActivity extends Activity {
         for (int i = 7; i >= 0; i--) {
             if (i < savedColorCount) {
                 int color = Color.parseColor(colorQueue.poll());
-                Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), color);
+                Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(0), color);
                 setColorScrollOnClickListener(i, true);
             } else {
-                Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(0), getColor(R.color.lightGray));
+                Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(0), getColor(R.color.lightGray));
                 setColorScrollOnClickListener(i, false);
             }
         }
 
-        Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(savedColorCount)).getChildAt(0), getColor(R.color.colorPrimary));
-        Utils.setDrawableColor(((FrameLayout) mColorScrollView.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#2FB1FE"));
+        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount)).getChildAt(0), getColor(R.color.colorPrimary));
+        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#2FB1FE"));
         setColorScrollOnClickListener(savedColorCount, true);
         setColorScrollOnClickListener(savedColorCount + 1, true);
         colorQueue = Utils.getList(getApplicationContext(), "savedColor");
@@ -451,12 +479,12 @@ public class SettingActivity extends Activity {
 
     private void setColorScrollOnClickListener(int index, boolean clickable) {
         if (clickable) {
-            ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
+            ((FrameLayout) mColorScrollLayout.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
                 Log.d(TAG, "color clicked" + index);
                 setColorCheckbox(index);
             });
         } else {
-            ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
+            ((FrameLayout) mColorScrollLayout.getChildAt(index)).getChildAt(0).setOnClickListener(v -> {
                 // do nothing
                 Log.d(TAG, "do not acting" + index);
             });
@@ -468,18 +496,18 @@ public class SettingActivity extends Activity {
 
         for (int i = 7; i >= 0; i--) {
             if (i == index) {
-                ((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
+                ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
                 if (i < colorQueue.size()) {
                     mCurrentColor = Color.parseColor(colorQueue.poll());
                 } else if (i == colorQueue.size()) {
-                    ((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
+                    ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
                     mCurrentColor = getColor(R.color.colorPrimary);
                 } else if (i == colorQueue.size() + 1) {
-                    ((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
+                    ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
                     mCurrentColor = Color.parseColor("#2FB1FE");
                 }
             } else {
-                ((FrameLayout) mColorScrollView.getChildAt(i)).getChildAt(1).setVisibility(View.GONE);
+                ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.GONE);
                 if (i < colorQueue.size()) {
                     colorQueue.poll();
                 }
@@ -488,7 +516,7 @@ public class SettingActivity extends Activity {
         colorQueue = Utils.getList(getApplicationContext(), "savedColor");
         Utils.savePreference(this, "selectedColorIndex", String.valueOf(index));
 
-        ImageView checkboxView = (ImageView) ((FrameLayout) mColorScrollView.getChildAt(index)).getChildAt(1);
+        ImageView checkboxView = (ImageView) ((FrameLayout) mColorScrollLayout.getChildAt(index)).getChildAt(1);
 
         if (Utils.canDisplayOnBackground(Color.WHITE, mCurrentColor)) {
             checkboxView.setImageTintList(ColorStateList.valueOf(getColor(R.color.pureWhite)));
