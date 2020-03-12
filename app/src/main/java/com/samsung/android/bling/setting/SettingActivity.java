@@ -196,6 +196,7 @@ public class SettingActivity extends Activity {
             }
         });
 
+        mCurrentColor = getColor(R.color.colorPrimary);
         int selectedColorIndex = Integer.parseInt(Utils.getPreference(getApplicationContext(), "selectedColorIndex"));
         if (selectedColorIndex == -1) {
             selectedColorIndex = 0;
@@ -245,6 +246,9 @@ public class SettingActivity extends Activity {
         });
 
         mBrightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
+        if (mBrightness == -1) {
+            mBrightness = 50000000;
+        }
         mBrightnessSeekBar.setProgress(mBrightness);
 
         mBrightnessSeekBar.setOnTouchListener((v, event) -> {
