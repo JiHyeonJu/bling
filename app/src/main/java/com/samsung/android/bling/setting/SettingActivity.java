@@ -216,10 +216,10 @@ public class SettingActivity extends Activity {
                 mIsCheeringMode = false;
 
                 mCheeringModeBtn.setTextColor(getColor(R.color.textColor));
-                mCheeringModeBtn.setBackground(getResources().getDrawable(R.drawable.setting_nonselected_lgiht_btn));
+                mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
 
                 mGeneralModeBtn.setTextColor(getColor(R.color.white));
-                mGeneralModeBtn.setBackground(getResources().getDrawable(R.drawable.setting_selected_lgiht_btn));
+                mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
             }
         });
 
@@ -229,10 +229,10 @@ public class SettingActivity extends Activity {
                 mIsCheeringMode = true;
 
                 mGeneralModeBtn.setTextColor(getColor(R.color.textColor));
-                mGeneralModeBtn.setBackground(getResources().getDrawable(R.drawable.setting_nonselected_lgiht_btn));
+                mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
 
                 mCheeringModeBtn.setTextColor(getColor(R.color.white));
-                mCheeringModeBtn.setBackground(getResources().getDrawable(R.drawable.setting_selected_lgiht_btn));
+                mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
             }
         });
 
@@ -445,7 +445,7 @@ public class SettingActivity extends Activity {
         }));
 
         mPickerDialog.findViewById(R.id.done).setOnClickListener((v -> {
-            if (true) {
+            if (mBound) {
                 if (colorQueue.size() == 6) {
                     colorQueue.remove();
                 }
