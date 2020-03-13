@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp">
+
+    <ImageView
+        android:layout_width="107dp"
+        android:layout_height="71dp"
+        android:layout_gravity="start"
+        android:layout_marginTop="24dp"
+        android:src="@drawable/bling_main_logo" />
+
+    <TextView
+        style="@style/font_700"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="6dp"
+        android:layout_marginTop="13dp"
+        android:text="The photo kit is connected" />
+</LinearLayout>
