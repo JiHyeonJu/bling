@@ -19,7 +19,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -44,8 +43,6 @@ import cn.cricin.colorpicker.OnValueChangeListener;
 
 public class SettingActivity extends Activity {
     private static final String TAG = "Bling/SettingActivity";
-
-    private ImageButton mAccountBtn;
 
     private TextView mLightModeTitle;
     private Button mGeneralModeBtn;
@@ -73,6 +70,9 @@ public class SettingActivity extends Activity {
     private SeekBar mBatterySeekBar;
     private TextView mBatteryPercent;
     private TextView mBatteryTime;
+
+    // will be removed
+    private BlingCanvas mCanvas;
 
     private boolean mBound = false;
     BlingService mService;
@@ -149,7 +149,7 @@ public class SettingActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra("bt_status");
 
-            if (message.equals("connect")) {
+            if ("connect".equals(message)) {
                 Log.d(TAG, "connect");
                 Intent Service = new Intent(getApplicationContext(), BlingService.class);
                 bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
@@ -166,8 +166,6 @@ public class SettingActivity extends Activity {
     };
 
     private void initView() {
-        mAccountBtn = findViewById(R.id.setting_account_btn);
-
         mLightModeTitle = findViewById(R.id.light_mode_title);
         mGeneralModeBtn = findViewById(R.id.general_light_btn);
         mCheeringModeBtn = findViewById(R.id.cheering_light_btn);
@@ -184,16 +182,13 @@ public class SettingActivity extends Activity {
         mScrollViewStartDivider = findViewById(R.id.scroll_view_start_divider);
         mScrollViewEndDivider = findViewById(R.id.scroll_view_end_divider);
 
-        mColorHorizontalScrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollX > 0) {
-                    mScrollViewStartDivider.setVisibility(View.VISIBLE);
-                } else {
-                    mScrollViewStartDivider.setVisibility(View.INVISIBLE);
-                }
-                //Log.d(TAG, "jjh!" + scrollX + "," + scrollY + "," + oldScrollX + "," + oldScrollY);
+        mColorHorizontalScrollView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollX > 0) {
+                mScrollViewStartDivider.setVisibility(View.VISIBLE);
+            } else {
+                mScrollViewStartDivider.setVisibility(View.INVISIBLE);
             }
+            //Log.d(TAG, "jjh!" + scrollX + "," + scrollY + "," + oldScrollX + "," + oldScrollY);
         });
 
         mCurrentColor = getColor(R.color.colorPrimary);
@@ -208,7 +203,7 @@ public class SettingActivity extends Activity {
         mBatteryPercent = findViewById(R.id.battery_percent);
         mBatteryTime = findViewById(R.id.batter_time);
 
-        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
+        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
 
         mGeneralModeBtn.setOnClickListener(v -> {
             if (mIsCheeringMode) {
@@ -236,9 +231,8 @@ public class SettingActivity extends Activity {
             }
         });
 
-        mAccountBtn.setOnClickListener(v -> {
-            startActivity(new Intent(SettingActivity.this, AccountActivity.class));
-        });
+        findViewById(R.id.setting_account_btn).setOnClickListener(v ->
+                startActivity(new Intent(SettingActivity.this, AccountActivity.class)));
 
         mColorPickerBtn.setOnClickListener(v -> {
             // todo : show dialog
@@ -293,6 +287,7 @@ public class SettingActivity extends Activity {
 
 
         // [[ todo: will be removed
+        mCanvas = findViewById(R.id.bling_canvas);
         findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -314,29 +309,14 @@ public class SettingActivity extends Activity {
                     }
                     break;
             }
+
+            //mService.intensityControl(r, g, b);
+            //mService.setOnOffLight(1 or 0);
             return true;
         });
 
-        findViewById(R.id.action_2).setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (mBound) {
-                        mService.setOnOffLight(1);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (mBound) {
-                        mService.setOnOffLight(0);
-                    }
-                    break;
-            }
-            return true;
-        });
-
-        findViewById(R.id.action_4).setOnClickListener(v -> {
-            if (mBound) {
-                mService.intensityControl(1, 0, 25);
-            }
+        findViewById(R.id.clean_canvas).setOnClickListener(v -> {
+            mCanvas.cleanCanvas();
         });
         // ]] will be removed
     }
@@ -415,21 +395,18 @@ public class SettingActivity extends Activity {
 
         CircleColorPicker circleColorPicker = mPickerDialog.findViewById(R.id.color_picker_circle);
         circleColorPicker.setColor(mCurrentColor);
-        circleColorPicker.setOnValueChangeListener(new OnValueChangeListener() {
-            @Override
-            public void onValueChanged(View view, int newColor) {
-                mCurrentColorHex = "#" + Utils.getHexCode(newColor);
+        circleColorPicker.setOnValueChangeListener((view, newColor) -> {
+            mCurrentColorHex = "#" + Utils.getHexCode(newColor);
 
-                float[] hsv = new float[3];
-                if (mBound) {
-                    Color.colorToHSV(newColor, hsv);
-                    hsv[2] = (float) mBrightness / 100000000;
+            float[] hsv = new float[3];
+            if (mBound) {
+                Color.colorToHSV(newColor, hsv);
+                hsv[2] = (float) mBrightness / 100000000;
 
-                    mService.sendColorToLed(Color.HSVToColor(hsv));
-                }
-                Utils.setDrawableColor(newColorView, newColor);
-                Log.d(TAG, "color : " + mCurrentColorHex);
+                mService.sendColorToLed(Color.HSVToColor(hsv));
             }
+            Utils.setDrawableColor(newColorView, newColor);
+            Log.d(TAG, "color : " + mCurrentColorHex);
         });
 
         mPickerDialog.findViewById(R.id.cancel).setOnClickListener((v -> {

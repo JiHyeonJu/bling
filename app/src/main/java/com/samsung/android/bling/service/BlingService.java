@@ -239,7 +239,8 @@ public class BlingService extends Service {
     }
 
     private void writeData(byte[] data, UUID uuid) {
-        BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data, uuid);
+        // todo: 주석 지울것, 일단은 블링에 쏘지말것
+        //BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data, uuid);
     }
 
     public void sendColorToLed(int currentColor) {
@@ -254,6 +255,7 @@ public class BlingService extends Service {
         tx_data[5] = (byte) (isOn[3] | isOn[4] << 1 | isOn[5] << 2);
         tx_data[6] = (byte) (isOn[6] | isOn[7] << 1 | isOn[8] << 2);
 
+        Log.d("jjh", "sendColor" + Utils.getHexCode(currentColor));
         writeData(tx_data, BluetoothUtils.RX_UUID);
     }
 

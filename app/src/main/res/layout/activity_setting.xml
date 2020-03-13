@@ -245,10 +245,16 @@
                 android:progressDrawable="@drawable/setting_battery_seekbar"
                 android:thumb="@android:color/transparent" />
 
+            <!--나중에 지울부분-->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/section_height"
+                android:layout_marginTop="25dp"
+                android:background="@color/sectionColor" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:background="@color/lightGray"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -256,26 +262,40 @@
                     android:id="@+id/action_1"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="1" />
+                    android:layout_weight="1"
+                    android:text="touch" />
 
-                <Button
-                    android:id="@+id/action_2"
+                <TextView
+                    android:id="@+id/touch_status"
+                    style="@style/font_700"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:text="2" />
-
-                <Button
-                    android:id="@+id/action_3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="3" />
-
-                <Button
-                    android:id="@+id/action_4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:text="4" />
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="touch data : " />
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/lightGray"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingVertical="18dp">
+
+                <com.samsung.android.bling.setting.BlingCanvas
+                    android:id="@+id/bling_canvas"
+                    android:layout_width="640px"
+                    android:layout_height="480px" />
+
+                <Button
+                    android:id="@+id/clean_canvas"
+                    android:layout_width="640px"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="clean canvas" />
+            </LinearLayout>
+            <!--나중에 지울부분 여기까지-->
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
