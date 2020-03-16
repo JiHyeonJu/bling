@@ -13,8 +13,20 @@ import androidx.annotation.Nullable;
 
 public class BlingCanvas extends View {
 
+    private static final String TAG = "Bling/BlingCanvas";
+
     Paint mPaint = new Paint();
     Path mPath = new Path();
+
+    interface CanvasTouchListener {
+        void onUserTouch(int action, int x, int y);
+    }
+
+    private CanvasTouchListener mListener = null;
+
+    public void setOnCanvasTouchListener(CanvasTouchListener listener) {
+        mListener = listener;
+    }
 
     public BlingCanvas(Context context) {
         super(context);
@@ -28,7 +40,7 @@ public class BlingCanvas extends View {
 
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(Color.BLACK);
-        mPaint.setStrokeWidth(4);
+        mPaint.setStrokeWidth(8);
     }
 
     @Override
@@ -50,15 +62,18 @@ public class BlingCanvas extends View {
                 this.getParent().requestDisallowInterceptTouchEvent(true);
 
                 mPath.moveTo(x, y); // 자취에 그리지 말고 위치만 이동해라
+
+                mListener.onUserTouch(0, (int) x, (int) y);
                 break;
             case MotionEvent.ACTION_MOVE:
                 mPath.lineTo(x, y); // 자취에 선을 그려라
+
+                mListener.onUserTouch(1, (int) x, (int) y);
                 break;
             case MotionEvent.ACTION_UP:
                 this.getParent().requestDisallowInterceptTouchEvent(false);
                 break;
         }
-
         invalidate(); // 화면을 다시그려라
 
         return true;
@@ -66,6 +81,21 @@ public class BlingCanvas extends View {
 
     public void cleanCanvas() {
         mPath.reset();
+
+        mListener.onUserTouch(2, 0, 0);
+
+        invalidate();
+    }
+
+    public void drawStarLine(int drawingInfo, int x, int y) {
+        if (drawingInfo == 0) {
+            mPath.moveTo(x, y);
+        } else if (drawingInfo == 1) {
+            mPath.lineTo(x, y);
+        } else if (drawingInfo == 2) {
+            mPath.reset();
+        }
+
         invalidate();
     }
 }

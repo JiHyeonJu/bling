@@ -318,6 +318,7 @@ public class BlingService extends Service {
         try {
             mMqttClient.subscribe("/bling/star/" + mStarId + "/conn");
             mMqttClient.subscribe("/bling/star/" + mStarId + "/msg/touch");
+            mMqttClient.subscribe("/bling/star/" + mStarId + "/msg/drawing");
             mMqttClient.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -330,6 +331,7 @@ public class BlingService extends Service {
                 public void messageArrived(String topic, MqttMessage message) {
                     Intent newIntent;
                     if (topic.equals("/bling/star/" + mStarId + "/conn")) {
+                        // 연결관련 메시징을 받을때
                         JsonParser jsonParser = new JsonParser();
                         JsonObject jsonObject = (JsonObject) jsonParser.parse(message.toString());
 
@@ -349,22 +351,29 @@ public class BlingService extends Service {
 
                         Log.d(TAG, "Mqtt messageArrived() conn data : " + data);
                     } else if (topic.equals("/bling/star/" + mStarId + "/msg/touch")) {
-                        if ("1".equals(message.toString())) {
-                            sendColorToLed(Color.WHITE);
-                        } else {
-                            sendColorToLed(Color.YELLOW);
-                            /*int color = ColorPickerPreferenceManager.getInstance(getApplicationContext())
-                                    .getColor("blingColorPicker", getColor(R.color.colorPrimary));
-                            int brightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
+                        // 터치 관련 메시지를 받을때
+                        if (!mIsStar) {
+                            // 팬만 받아서 동작함
+                            if ("1".equals(message.toString())) {
+                                //sendColorToLed(Color.WHITE);
+                            } else {
+                                /*float[] hsv = new float[3];
+                                Color.colorToHSV(color, hsv);
+                                hsv[2] = (float) brightness / 100000000;
 
-                            float[] hsv = new float[3];
-                            Color.colorToHSV(color, hsv);
-                            hsv[2] = (float) brightness / 100000000;
-
-                            sendColorToLed(Color.HSVToColor(hsv));*/
+                                sendColorToLed(Color.HSVToColor(hsv));*/
+                            }
+                            Log.d(TAG, "Mqtt messageArrived() touch : " + message.toString());
                         }
+                    } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawing")) {
+                        if (!mIsStar) {
+                            // 팬만 받아서 동작함
+                            Log.d(TAG, "Mqtt messageArrived() drawing : " + message.toString());
 
-                        Log.d(TAG, "Mqtt messageArrived() touch : " + message.toString());
+                            newIntent = new Intent("bling.service.action.STAR_DRAWING");
+                            newIntent.putExtra("msg", message.toString());
+                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
+                        }
                     }
                 }
 
@@ -379,14 +388,26 @@ public class BlingService extends Service {
         }
     }
 
-    public void mqttPublish(String data) {
+    public void mqttTouchPublish(String data) {
         mqttConnect();
 
         try {
             mMqttClient.publish("/bling/star/" + mStarId + "/msg/touch", new MqttMessage(data.getBytes()));
             Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/touch" + data);
         } catch (Exception e) {
-            Log.d(TAG, "mqttPublish() : error");
+            Log.d(TAG, "mqttTouchPublish() : error");
+            e.printStackTrace();
+        }
+    }
+
+    public void mqttDrawingPublish(String data) {
+        mqttConnect();
+
+        try {
+            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", new MqttMessage(data.getBytes()));
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing" + data);
+        } catch (Exception e) {
+            Log.d(TAG, "mqttDrawingPublish() : error");
             e.printStackTrace();
         }
     }

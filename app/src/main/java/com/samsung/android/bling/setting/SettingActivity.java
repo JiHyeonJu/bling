@@ -39,7 +39,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import cn.cricin.colorpicker.CircleColorPicker;
-import cn.cricin.colorpicker.OnValueChangeListener;
 
 public class SettingActivity extends Activity {
     private static final String TAG = "Bling/SettingActivity";
@@ -134,8 +133,12 @@ public class SettingActivity extends Activity {
 
         setEnableView(Utils.isMyServiceRunning(this, BlingService.class));
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("bling.service.action.BT_CONNECTION_CHANGED"));
+        /*LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("bling.service.action.BT_CONNECTION_CHANGED"));*/
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("bling.service.action.BT_CONNECTION_CHANGED");
+        intentFilter.addAction("bling.service.action.STAR_DRAWING");
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
     }
 
     @Override
@@ -147,20 +150,32 @@ public class SettingActivity extends Activity {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra("bt_status");
+            String action = intent.getAction();
 
-            if ("connect".equals(message)) {
-                Log.d(TAG, "connect");
-                Intent Service = new Intent(getApplicationContext(), BlingService.class);
-                bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
-                // setEnableView(true); is in onServiceConnected()
-            } else {
-                if (mBound && Utils.isMyServiceRunning(SettingActivity.this, BlingService.class)) {
-                    Log.d(TAG, "disconnect");
-                    unbindService(mConnection);
-                    mBound = false;
-                    setEnableView(false);
+            if (action.equals("bling.service.action.BT_CONNECTION_CHANGED")) {
+                // 블루투스 통신에 의해 나 자신의 연결상태 확인
+                String message = intent.getStringExtra("bt_status");
+
+                if ("connect".equals(message)) {
+                    Log.d(TAG, "connect");
+                    Intent Service = new Intent(getApplicationContext(), BlingService.class);
+                    bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
+                    // setEnableView(true); is in onServiceConnected()
+                } else {
+                    // 블루투스 연결이 끊기고 현재 서비스가 돌고있다면
+                    if (mBound && Utils.isMyServiceRunning(SettingActivity.this, BlingService.class)) {
+                        Log.d(TAG, "disconnect");
+                        unbindService(mConnection);
+                        mBound = false;
+                        setEnableView(false);
+                    }
                 }
+            } else if (action.equals("bling.service.action.STAR_DRAWING")) {
+                String message = intent.getStringExtra("msg");
+
+                String[] point = message.split("\\|");
+                Log.d(TAG, "Mqtt messageArrived() drawing : " + message);
+                mCanvas.drawStarLine(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]));
             }
         }
     };
@@ -191,7 +206,6 @@ public class SettingActivity extends Activity {
             //Log.d(TAG, "jjh!" + scrollX + "," + scrollY + "," + oldScrollX + "," + oldScrollY);
         });
 
-        mCurrentColor = getColor(R.color.colorPrimary);
         int selectedColorIndex = Integer.parseInt(Utils.getPreference(getApplicationContext(), "selectedColorIndex"));
         if (selectedColorIndex == -1) {
             selectedColorIndex = 0;
@@ -288,18 +302,39 @@ public class SettingActivity extends Activity {
 
         // [[ todo: will be removed
         mCanvas = findViewById(R.id.bling_canvas);
+        mCanvas.setOnCanvasTouchListener(new BlingCanvas.CanvasTouchListener() {
+            @Override
+            public void onUserTouch(int action, int x, int y) {
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String data = action + "|" + x + "|" + y;
+                        if (mBound) {
+                            try {
+                                //mService.mqttDrawingPublish(data);
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+                thread.start();
+            }
+        });
+
         findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (mBound) {
-                        mService.mqttPublish("1");
+                        mService.mqttTouchPublish("1");
 
                         mService.sendColorToLed(Color.WHITE);
                     }
                     break;
                 case MotionEvent.ACTION_UP:
                     if (mBound) {
-                        mService.mqttPublish("0");
+                        mService.mqttTouchPublish("0");
 
                         float[] hsv = new float[3];
                         Color.colorToHSV(mCurrentColor, hsv);
