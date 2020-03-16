@@ -175,7 +175,7 @@ public class SettingActivity extends Activity {
 
                 String[] point = message.split("\\|");
                 Log.d(TAG, "Mqtt messageArrived() drawing : " + message);
-                mCanvas.drawStarLine(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]));
+                mCanvas.drawStarLine(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]), Integer.parseInt(point[3]));
             }
         }
     };
@@ -311,7 +311,7 @@ public class SettingActivity extends Activity {
                         String data = action + "|" + x + "|" + y;
                         if (mBound) {
                             try {
-                                //mService.mqttDrawingPublish(data);
+                                mService.mqttDrawingPublish(data);
                                 Thread.sleep(50);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();

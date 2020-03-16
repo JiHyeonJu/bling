@@ -16,7 +16,10 @@ public class BlingCanvas extends View {
     private static final String TAG = "Bling/BlingCanvas";
 
     Paint mPaint = new Paint();
-    Path mPath = new Path();
+
+    int memberCount = 7;
+    Path mPath[];
+    Path myPath = new Path();
 
     interface CanvasTouchListener {
         void onUserTouch(int action, int x, int y);
@@ -28,19 +31,17 @@ public class BlingCanvas extends View {
         mListener = listener;
     }
 
-    public BlingCanvas(Context context) {
-        super(context);
-
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setColor(Color.RED);
-    }
-
     public BlingCanvas(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setColor(Color.BLACK);
         mPaint.setStrokeWidth(8);
+
+        mPath = new Path[memberCount];
+        for (int i = 0; i < memberCount; i++) {
+            mPath[i] = new Path();
+        }
     }
 
     @Override
@@ -49,7 +50,11 @@ public class BlingCanvas extends View {
 
         canvas.drawColor(Color.WHITE);
 
-        canvas.drawPath(mPath, mPaint);
+        canvas.drawPath(myPath, mPaint);
+
+        for (int i = 0; i < memberCount; i++) {
+            canvas.drawPath(mPath[i], mPaint);
+        }
     }
 
     @Override
@@ -61,12 +66,12 @@ public class BlingCanvas extends View {
             case MotionEvent.ACTION_DOWN:
                 this.getParent().requestDisallowInterceptTouchEvent(true);
 
-                mPath.moveTo(x, y); // 자취에 그리지 말고 위치만 이동해라
+                myPath.moveTo(x, y); // 자취에 그리지 말고 위치만 이동해라
 
                 mListener.onUserTouch(0, (int) x, (int) y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                mPath.lineTo(x, y); // 자취에 선을 그려라
+                myPath.lineTo(x, y); // 자취에 선을 그려라
 
                 mListener.onUserTouch(1, (int) x, (int) y);
                 break;
@@ -80,20 +85,20 @@ public class BlingCanvas extends View {
     }
 
     public void cleanCanvas() {
-        mPath.reset();
+        myPath.reset();
 
         mListener.onUserTouch(2, 0, 0);
 
         invalidate();
     }
 
-    public void drawStarLine(int drawingInfo, int x, int y) {
+    public void drawStarLine(int drawingInfo, int x, int y, int member) {
         if (drawingInfo == 0) {
-            mPath.moveTo(x, y);
+            mPath[member].moveTo(x, y);
         } else if (drawingInfo == 1) {
-            mPath.lineTo(x, y);
+            mPath[member].lineTo(x, y);
         } else if (drawingInfo == 2) {
-            mPath.reset();
+            mPath[member].reset();
         }
 
         invalidate();

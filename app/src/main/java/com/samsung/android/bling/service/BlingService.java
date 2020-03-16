@@ -48,6 +48,7 @@ public class BlingService extends Service {
 
     private boolean mIsStar;
     private String mStarId = "1";
+    private String mMemberId;
 
     public class BTBinder extends Binder {
         public BlingService getService() { // 서비스 객체를 리턴
@@ -139,7 +140,8 @@ public class BlingService extends Service {
         Log.d(TAG, "onCreate()");
 
         mIsStar = Utils.getIsStar(getApplicationContext());
-        Log.d(TAG, "isStar?" + mIsStar);
+        mMemberId = Utils.getPreference(getApplicationContext(), "ID");
+        Log.d(TAG, "isStar?" + mIsStar + "mMemberId" + mMemberId);
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
 
@@ -239,8 +241,7 @@ public class BlingService extends Service {
     }
 
     private void writeData(byte[] data, UUID uuid) {
-        // todo: 주석 지울것, 일단은 블링에 쏘지말것
-        //BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data, uuid);
+        BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data, uuid);
     }
 
     public void sendColorToLed(int currentColor) {
@@ -404,6 +405,7 @@ public class BlingService extends Service {
         mqttConnect();
 
         try {
+            data = data + "|" + mMemberId;
             mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", new MqttMessage(data.getBytes()));
             Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing" + data);
         } catch (Exception e) {
