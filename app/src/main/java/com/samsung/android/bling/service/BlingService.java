@@ -185,7 +185,7 @@ public class BlingService extends Service {
             }
         }
 
-        updateStarStatus(mIsStar, mStarId, "off");
+        updateStarStatus(mIsStar, mMemberId, "off");
 
         /*Log.d("jjh", "stop thread");
         Go = false;*/
@@ -198,7 +198,7 @@ public class BlingService extends Service {
         Log.d(TAG, "onStartCommand()");
 
         mqttSubscribe();
-        updateStarStatus(mIsStar, mStarId, "on");
+        updateStarStatus(mIsStar, mMemberId, "on");
 
         if (mTargetdevice != null) {
             Log.d(TAG, "attempting connect - " + mTargetdevice.getName() + " , " + mTargetdevice.getAddress());
@@ -217,7 +217,6 @@ public class BlingService extends Service {
         if (isStar) {
             HashMap<String, Object> parameters = new HashMap<>();
 
-            parameters.put("member_id", Id);
             parameters.put("member_conn_state", msg);
 
             retroClient.updateStarConnection(Id, parameters, new RetroCallback() {

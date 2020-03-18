@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private Button mChartBtn;
 
     private RetroClient retroClient;
-    private String mId;
+    private String mMemberId;
     private boolean mIsStar;
     private String mStarId = "1";    // 블링 기기로부터 starID 얻어오게끔 수정될 예정
 
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mId = getIntent().getStringExtra("ID");
+        mMemberId = getIntent().getStringExtra("ID");
         mIsStar = getIntent().getBooleanExtra("isStar", false);
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
         mRewardBtn.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RewardActivity.class);
-            intent.putExtra("ID", mId);
+            intent.putExtra("ID", mMemberId);
             startActivity(intent);
 
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUserName() {
         if (mIsStar) {
-            retroClient.getStarData(mId, new RetroCallback() {
+            retroClient.getStarData(mMemberId, new RetroCallback() {
                 @Override
                 public void onError(Throwable t) {
                     Log.d(TAG, "create() onError : " + t.toString());
@@ -270,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         } else {
-            retroClient.getUserData(mId, new RetroCallback() {
+            retroClient.getUserData(mMemberId, new RetroCallback() {
                 @Override
                 public void onError(Throwable t) {
                     Log.d(TAG, "create() onError : " + t.toString());

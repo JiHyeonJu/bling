@@ -392,7 +392,7 @@ public class AccountActivity extends AppCompatActivity {
 
             Utils.dismissDialog(mAlertDialog);
 
-            if (mIsStar && Utils.isMyServiceRunning(this, BlingService.class)) {
+            if (mIsStar) {
                 SetMemberConnectionOff();
             } else {
                 if (Utils.isMyServiceRunning(this, BlingService.class)) {
@@ -490,7 +490,6 @@ public class AccountActivity extends AppCompatActivity {
     private void SetMemberConnectionOff() {
         HashMap<String, Object> parameters = new HashMap<>();
 
-        parameters.put("member_id", mId);
         parameters.put("member_conn_state", "off");
 
         retroClient.updateStarConnection(mId, parameters, new RetroCallback() {
@@ -505,7 +504,7 @@ public class AccountActivity extends AppCompatActivity {
                 Log.d(TAG, "SetStarConnection() update success! : " + code);
 
                 if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class)) {
-                    Log.d(TAG, "stop service");
+                    Log.d(TAG, "stop service" + mId);
                     stopService(MyApplication.getServiceIntent());
                 }
 

@@ -246,7 +246,7 @@ public class SigninActivity extends AppCompatActivity {
         }
 
         Utils.savePreference(getApplicationContext(), "ID", id);
-        //Log.d(TAG, data.getID());
+        //Log.d(TAG, id);
 
         intent.putExtra("ID", id);
         intent.putExtra("isStar", isStar);
