@@ -247,7 +247,7 @@ public class SettingActivity extends Activity {
 
         findViewById(R.id.setting_account_btn).setOnClickListener(v -> {
             startActivity(new Intent(SettingActivity.this, AccountActivity.class));
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
 
         mColorPickerBtn.setOnClickListener(v -> {
