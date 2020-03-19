@@ -10,17 +10,17 @@ public class MyApplication extends Application {
 
     private static final String TAG = "Bling/MyApplication";
 
-    public static Intent serviceIntent;
+    public static Intent sServiceIntent;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
         Log.d(TAG, "jjh Application start");
-        serviceIntent = new Intent(getApplicationContext(), BlingService.class);
+        sServiceIntent = new Intent(getApplicationContext(), BlingService.class);
     }
 
     public static Intent getServiceIntent() {
-        return serviceIntent;
+        return sServiceIntent;
     }
 }

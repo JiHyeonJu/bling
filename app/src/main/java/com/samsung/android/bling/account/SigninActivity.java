@@ -2,7 +2,6 @@ package com.samsung.android.bling.account;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;

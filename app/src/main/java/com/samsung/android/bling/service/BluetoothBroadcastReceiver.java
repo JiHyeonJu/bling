@@ -10,7 +10,6 @@ import android.util.Log;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.samsung.android.bling.MyApplication;
-import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.util.Utils;
 
 public class BluetoothBroadcastReceiver extends BroadcastReceiver {
