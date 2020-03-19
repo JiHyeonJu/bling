@@ -214,18 +214,19 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void messageArrived(String topic, MqttMessage message) {
+                        setStarStatus();
+
                         JsonParser jsonParser = new JsonParser();
                         JsonObject jsonObject = (JsonObject) jsonParser.parse(message.toString());
 
                         String data = jsonObject.get("msg_data").getAsString();
 
-                        boolean isOn = "on".equals(data);
-                        setStarStatus();
-                        if (isOn && !mIsStar) {
+                        // 팬은 스타가 online 했을때 노티를 받는다
+                        if (!mIsStar && "on".equals(data)) {
                             Utils.showNotification(MainActivity.this, false,
                                     1001, "Bling", getString(R.string.star_online_notification_msg));
                         }
-                        Log.d(TAG, "jjhhh Mqtt messageArrived() ison : " + isOn);
+                        Log.d(TAG, "jjhhh Mqtt messageArrived() in MainActivity : " + data);
                     }
 
                     @Override
