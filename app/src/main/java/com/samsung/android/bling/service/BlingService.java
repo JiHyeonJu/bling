@@ -337,19 +337,17 @@ public class BlingService extends Service {
 
                         String data = jsonObject.get("msg_data").getAsString();
 
-                        if (!mIsStar) {
-                            // 팬의 서비스가 돌고 있을때 노티 보여줌
-                            if ("on".equals(data)) {
-                                Utils.showNotification(BlingService.this, false,
-                                        1001, "Bling", getString(R.string.star_online_notification_msg));
-                            }
+                        // 팬은 스타가 online 했을때 노티를 받는다
+                        if (!mIsStar && "on".equals(data)) {
+                            Utils.showNotification(BlingService.this, false,
+                                    1001, "Bling", getString(R.string.star_online_notification_msg));
                         }
 
                         newIntent = new Intent("bling.service.action.STAR_CONNECTION_CHANGED");
                         newIntent.putExtra("msg", data);
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
 
-                        Log.d(TAG, "Mqtt messageArrived() conn data : " + data);
+                        Log.d(TAG, "Mqtt messageArrived() in Service : " + data);
                     } else if (topic.equals("/bling/star/" + mStarId + "/msg/touch")) {
                         // 터치 관련 메시지를 받을때
                         if (!mIsStar) {
