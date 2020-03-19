@@ -28,12 +28,12 @@
     <string name="sign_out_dialog_q">Are you sure you want to sign out?</string>
 
     <string name="setting_title">Setting</string>
-    <string name="history_title">history</string>
+    <string name="history_title">Bling history</string>
     <string name="account_title">My account</string>
     <string name="chart_title">Cheering lights</string>
 
     <string name="light_mode">Light mode</string>
-    <string name="general_light">General light</string>
+    <string name="mood_light">Mood light</string>
     <string name="cheering_light">Cheering light</string>
     <string name="cheeringlights_logo">The fans are sending you the\n lights to cheer you up</string>
     <string name="brightness">Brightness</string>

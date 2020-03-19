@@ -488,8 +488,8 @@ public class SettingActivity extends Activity {
             }
         }
 
-        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount)).getChildAt(0), getColor(R.color.colorPrimary));
-        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#2FB1FE"));
+        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount)).getChildAt(0), Color.WHITE);
+        Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#FFF8DA"));
         setColorScrollOnClickListener(savedColorCount, true);
         setColorScrollOnClickListener(savedColorCount + 1, true);
         colorQueue = Utils.getList(getApplicationContext(), "savedColor");
@@ -519,10 +519,10 @@ public class SettingActivity extends Activity {
                     mCurrentColor = Color.parseColor(colorQueue.poll());
                 } else if (i == colorQueue.size()) {
                     ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
-                    mCurrentColor = getColor(R.color.colorPrimary);
+                    mCurrentColor = Color.WHITE;
                 } else if (i == colorQueue.size() + 1) {
                     ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.VISIBLE);
-                    mCurrentColor = Color.parseColor("#2FB1FE");
+                    mCurrentColor = Color.parseColor("#FFF8DA");
                 }
             } else {
                 ((FrameLayout) mColorScrollLayout.getChildAt(i)).getChildAt(1).setVisibility(View.GONE);

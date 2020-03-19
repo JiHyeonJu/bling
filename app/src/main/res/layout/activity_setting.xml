@@ -78,7 +78,7 @@
                     android:id="@+id/general_light_btn"
                     style="@style/light_mode_button"
                     android:background="@drawable/setting_selected_lgiht_btn"
-                    android:text="@string/general_light"
+                    android:text="@string/mood_light"
                     android:textColor="@color/white"
                     android:textSize="16dp" />
 
