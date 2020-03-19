@@ -132,7 +132,7 @@ public class AccountActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
+        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
 
         mUserIdView = findViewById(R.id.user_id_view);
         mUserNameView = findViewById(R.id.user_name_view);
@@ -494,5 +494,12 @@ public class AccountActivity extends AppCompatActivity {
         }
 
         return parameters;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 }

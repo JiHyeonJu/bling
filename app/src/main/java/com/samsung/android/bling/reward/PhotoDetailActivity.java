@@ -37,7 +37,7 @@ public class PhotoDetailActivity extends Activity {
     }
 
     private void initView() {
-        findViewById(R.id.close).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
+        findViewById(R.id.close).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
 
         FrameLayout layout = findViewById(R.id.photo_image_layout);
         ImageView memberImageView = findViewById(R.id.photo_image);

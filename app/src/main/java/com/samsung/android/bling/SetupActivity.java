@@ -38,6 +38,8 @@ public class SetupActivity extends AppCompatActivity {
             Intent intent = new Intent(SetupActivity.this, SigninActivity.class);
             startActivity(intent);
             finish();
+
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
     }
 

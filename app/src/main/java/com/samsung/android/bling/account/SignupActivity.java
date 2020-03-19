@@ -274,6 +274,7 @@ public class SignupActivity extends AppCompatActivity {
                     Toast.makeText(SignupActivity.this, "Successfully registered", Toast.LENGTH_LONG).show();
 
                     finish();
+                    overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
                 }
 
                 @Override

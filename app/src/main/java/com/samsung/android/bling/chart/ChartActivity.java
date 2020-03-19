@@ -64,7 +64,7 @@ public class ChartActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
+        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
         // set logo height
         Double logoViewHeight = (Utils.getDisplayHeight(this)
                 - getResources().getDimensionPixelSize(R.dimen.toolbar_height)
@@ -98,5 +98,12 @@ public class ChartActivity extends AppCompatActivity {
 
             layout.addView(view);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 }

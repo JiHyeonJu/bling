@@ -104,9 +104,15 @@ public class MainActivity extends AppCompatActivity {
 
         mUnpairBtn.setOnClickListener(v -> BluetoothUtils.unpairDevice());
 
-        mSettingBtn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SettingActivity.class)));
+        mSettingBtn.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, SettingActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
 
-        mHistoryBtn.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, HistoryActivity.class)));
+        mHistoryBtn.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, HistoryActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
 
         mRewardBtn.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RewardActivity.class);

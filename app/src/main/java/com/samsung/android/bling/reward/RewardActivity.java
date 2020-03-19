@@ -115,10 +115,11 @@ public class RewardActivity extends Activity {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
         }
 
-        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(() -> onBackPressed(), 250));
+        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
 
         findViewById(R.id.cheering_chart_btn).setOnClickListener(v -> {
             startActivity(new Intent(RewardActivity.this, ChartActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
     }
 

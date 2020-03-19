@@ -234,6 +234,7 @@ public class SigninActivity extends AppCompatActivity {
 
         mSignupView.setOnClickListener(v -> {
             startActivity(new Intent(this, SignupActivity.class));
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         });
     }
 
@@ -252,6 +253,8 @@ public class SigninActivity extends AppCompatActivity {
         intent.putExtra("isStar", isStar);
         startActivity(intent);
         finish();
+
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     private void setEnableSigninBtn(boolean isEnabled) {
