@@ -392,17 +392,12 @@ public class AccountActivity extends AppCompatActivity {
 
             Utils.dismissDialog(mAlertDialog);
 
-            if (mIsStar) {
-                SetMemberConnectionOff();
-            } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class)) {
-                    Log.d(TAG, "stop service");
-                    stopService(MyApplication.getServiceIntent());
-                }
-
-                startActivity(new Intent(this, SigninActivity.class));
-                ActivityCompat.finishAffinity(this);
+            if (Utils.isMyServiceRunning(this, BlingService.class)) {
+                Log.d(TAG, "stop service");
+                stopService(MyApplication.getServiceIntent());
             }
+            startActivity(new Intent(this, SigninActivity.class));
+            ActivityCompat.finishAffinity(this);
         });
 
         mAlertDialog.findViewById(R.id.no).setOnClickListener(v -> {
@@ -420,16 +415,12 @@ public class AccountActivity extends AppCompatActivity {
 
             Utils.dismissDialog(mAlertDialog);
 
-            if (mIsStar) {
-                SetMemberConnectionOff();
-            } else {
-                if (Utils.isMyServiceRunning(this, BlingService.class)) {
-                    Log.d(TAG, "stop service");
-                    stopService(MyApplication.getServiceIntent());
-                }
-                startActivity(new Intent(this, SigninActivity.class));
-                ActivityCompat.finishAffinity(this);
+            if (Utils.isMyServiceRunning(this, BlingService.class)) {
+                Log.d(TAG, "stop service");
+                stopService(MyApplication.getServiceIntent());
             }
+            startActivity(new Intent(this, SigninActivity.class));
+            ActivityCompat.finishAffinity(this);
         });
 
         mAlertDialog.findViewById(R.id.no).setOnClickListener(v -> {
@@ -485,38 +476,6 @@ public class AccountActivity extends AppCompatActivity {
                 }
             });
         }
-    }
-
-    private void SetMemberConnectionOff() {
-        HashMap<String, Object> parameters = new HashMap<>();
-
-        parameters.put("member_conn_state", "off");
-
-        retroClient.updateStarConnection(mId, parameters, new RetroCallback() {
-            @Override
-            public void onError(Throwable t) {
-                Log.d(TAG, "SetStarConnection() onError : " + t.toString());
-                t.printStackTrace();
-            }
-
-            @Override
-            public void onSuccess(int code, Object receivedData) {
-                Log.d(TAG, "SetStarConnection() update success! : " + code);
-
-                if (Utils.isMyServiceRunning(AccountActivity.this, BlingService.class)) {
-                    Log.d(TAG, "stop service" + mId);
-                    stopService(MyApplication.getServiceIntent());
-                }
-
-                startActivity(new Intent(AccountActivity.this, SigninActivity.class));
-                ActivityCompat.finishAffinity(AccountActivity.this);
-            }
-
-            @Override
-            public void onFailure(int code, Object errorData) {
-                Log.d(TAG, "SetStarConnection() jjh onFailure : " + errorData);
-            }
-        });
     }
 
     private HashMap<String, Object> setParameters(String userId, String password, String name, String color, String starId) {

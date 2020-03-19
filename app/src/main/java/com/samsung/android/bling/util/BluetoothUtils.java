@@ -24,7 +24,7 @@ public class BluetoothUtils {
     public static final UUID TX_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
     public static final int REQUEST_ENABLE_BT = 1;
-    public static final String BT_NAME = "Bling";    //7C:96:D2:25:DE:1D
+    public static final String BT_NAME = "JBL Pulse 3";    //7C:96:D2:25:DE:1D
     public static final String BT_ADDRESS = "D0:E3:25:85:F7:BE";
 
     public static void checkBluetooth(Context context) {
@@ -50,7 +50,8 @@ public class BluetoothUtils {
 
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
-                if (BT_NAME.equals(device.getName())) {
+                //if (BT_NAME.equals(device.getName())) {
+                if (BT_NAME.equals(device.getName()) || "AirPods".equals(device.getName())) {
                     targetDevice = device;
                 }
                 Log.d(TAG, device.getAddress().toString());

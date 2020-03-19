@@ -228,7 +228,7 @@ public class BlingService extends Service {
 
                 @Override
                 public void onSuccess(int code, Object receivedData) {
-                    Log.d(TAG, "setStatusView() update success! : " + code);
+                    Log.d(TAG, "jjhhh updateStarStatus() : " + Id + msg);
                 }
 
                 @Override

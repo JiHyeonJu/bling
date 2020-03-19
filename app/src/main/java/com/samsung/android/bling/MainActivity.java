@@ -72,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
-        /*if (!Utils.isMyServiceRunning(this, BlingService.class)) {
+        if (!Utils.isMyServiceRunning(this, BlingService.class)) {
             startForegroundService(MyApplication.getServiceIntent());
-        }*/
+        }
         // BT
         //BluetoothUtils.checkBluetooth(this);
     }
@@ -128,21 +128,18 @@ public class MainActivity extends AppCompatActivity {
         intentFilter.addAction("bling.service.action.STAR_CONNECTION_CHANGED");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
 
-        if (!mIsStar) {
-            mqttSubscribe();
-        }
+        mqttSubscribe();
 
         setUserName();
-        setStatusView(Utils.isMyServiceRunning(this, BlingService.class), false);
+        updateStatusView(Utils.isMyServiceRunning(this, BlingService.class), mMyStatusView);
+        setStarStatus();
     }
 
     @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
-        if (!mIsStar) {
-            mqttUnsubscribe();
-        }
+        mqttUnsubscribe();
 
         super.onPause();
     }
@@ -171,13 +168,21 @@ public class MainActivity extends AppCompatActivity {
             if (action.equals("bling.service.action.BT_CONNECTION_CHANGED")) {
                 message = intent.getStringExtra("bt_status");
 
-                setStatusView("connect".equals(message), false);
+                boolean isConnected = "connect".equals(message);
+                updateStatusView("connect".equals(message), mMyStatusView);
+
+                // 메인의 mqttsubscribe를 내가 끊어질때 한번더 보도록 서비스에서 체크할줄알고 메인에서는 체크안해 온리쥼때만 이어주니까
+                if (isConnected) {
+                    mqttUnsubscribe();
+                } else {
+                    mqttSubscribe();
+                }
             } else if (action.equals("bling.service.action.STAR_CONNECTION_CHANGED")) {
                 message = intent.getStringExtra("msg");
 
-                setStatusView("on".equals(message), true);
+                setStarStatus();
             }
-            Log.d(TAG, "action: " + action + ", message: " + message);
+            Log.d(TAG, "jjhhh action: " + action + ", message: " + message);
         }
     };
 
@@ -215,12 +220,12 @@ public class MainActivity extends AppCompatActivity {
                         String data = jsonObject.get("msg_data").getAsString();
 
                         boolean isOn = "on".equals(data);
-                        setStatusView(isOn, true);
-                        if (isOn) {
+                        setStarStatus();
+                        if (isOn && !mIsStar) {
                             Utils.showNotification(MainActivity.this, false,
                                     1001, "Bling", getString(R.string.star_online_notification_msg));
                         }
-                        Log.d(TAG, "Mqtt messageArrived() ison : " + isOn);
+                        Log.d(TAG, "jjhhh Mqtt messageArrived() ison : " + isOn);
                     }
 
                     @Override
@@ -293,25 +298,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setStatusView(boolean isOn, boolean isStarView) {
-        String msg = isOn ? "on" : "off";
-
-        Log.d(TAG, "ison : " + isOn + ", isStarView : " + isStarView);
-
-        if (isStarView) {
-            updateView(isOn, mStarStatusView);
-        } else {
-            updateView(isOn, mMyStatusView);
-
-            if (mIsStar) {
-                updateView(isOn, mStarStatusView);
-            } else {
-                setStarStatus();
-            }
-        }
-    }
-
-    private void updateView(boolean isOn, TextView view) {
+    private void updateStatusView(boolean isOn, TextView view) {
         if (isOn) {
             view.setText(getString(R.string.on_line));
             view.setTextColor(getColor(R.color.white));
@@ -335,9 +322,11 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(int code, Object receivedData) {
                 StarInfoVo data = (StarInfoVo) receivedData;
 
-                setStatusView("on".equals(data.getStarStatus()), true);
+                updateStatusView("on".equals(data.getStarStatus()), mStarStatusView);
 
                 mStarNameView.setText(data.getStarName());
+
+                Log.d(TAG, "jjhhh setStarStatus() : " + data.getStarStatus());
             }
 
             @Override
