@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,19 +23,20 @@ public class PhotoKitAdapter extends RecyclerView.Adapter<PhotoKitViewHolder> {
 
     private static final String TAG = "Bling/PhotoKitAdapter";
 
+    private static final int NO_PHOTOKIT = -1;
+
     private Context mContext;
 
-    private int mAlbums;
-    private int mMembers;
+    private int mMemberCount;
 
     private ArrayList<AlbumItemVo> mAlbumData;
     private ArrayList<PhotoKitItemVo> mPhotoKitData;
 
-    public PhotoKitAdapter(Context context) {
-        //Log.d(TAG + "PhotoKitAdapter()");
-        mContext = context;
+    private int mSelectedAlbum = NO_PHOTOKIT;
+    private int mSelectedMember = NO_PHOTOKIT;
 
-        Log.d(TAG, mAlbums + "," + mMembers);
+    public PhotoKitAdapter(Context context) {
+        mContext = context;
     }
 
     @NonNull
@@ -45,7 +45,7 @@ public class PhotoKitAdapter extends RecyclerView.Adapter<PhotoKitViewHolder> {
         //Log.d(TAG + "onCreateViewHolder()");
         LayoutInflater layoutInflater = LayoutInflater.from(viewGroup.getContext());
         View view = layoutInflater.inflate(R.layout.photo_kit_view_layout, viewGroup, false);
-        return new PhotoKitViewHolder(view, mContext, mMembers);
+        return new PhotoKitViewHolder(view, mContext, mMemberCount);
     }
 
     @Override
@@ -67,6 +67,10 @@ public class PhotoKitAdapter extends RecyclerView.Adapter<PhotoKitViewHolder> {
         holder.setMemberName(mAlbumData.get(position).getMemberNameList());
         holder.setPhotoKit(mAlbumData.get(position).getMemberCount());
         holder.setDivider(position == getItemCount() - 1);
+
+        if (position + 1 == mSelectedAlbum) {
+            holder.setSelectedPhotoKit(mAlbumData.get(position).getMemberCount(), mSelectedMember);
+        }
 
         if (mPhotoKitData != null) {
             for (PhotoKitItemVo photoKit : mPhotoKitData) {
@@ -117,8 +121,7 @@ public class PhotoKitAdapter extends RecyclerView.Adapter<PhotoKitViewHolder> {
         if (list != null && list.size() > 0) {
             mAlbumData = list;
 
-            mAlbums = list.size();
-            mMembers = list.get(0).getMemberCount();
+            mMemberCount = list.get(0).getMemberCount();
 
             notifyDataSetChanged();
         }
@@ -128,6 +131,15 @@ public class PhotoKitAdapter extends RecyclerView.Adapter<PhotoKitViewHolder> {
         if (list != null && list.size() > 0) {
             mPhotoKitData = list;
 
+            notifyDataSetChanged();
+        }
+    }
+
+    public void setSelectedPhotoKit(int selectedAlbum, int selectedMember) {
+        mSelectedAlbum = selectedAlbum;
+        mSelectedMember = selectedMember;
+
+        if (selectedAlbum != NO_PHOTOKIT && selectedMember != NO_PHOTOKIT) {
             notifyDataSetChanged();
         }
     }

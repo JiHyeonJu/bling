@@ -37,6 +37,9 @@ public class PhotoKitItemVo {
     class Album {
         @SerializedName("ab_CT")
         int abCT;
+
+        @SerializedName("ab_MEMBER_ID_LIST")
+        String memberIdList;
     }
 
     public String getMemberId() {
@@ -53,5 +56,9 @@ public class PhotoKitItemVo {
 
     public int getAlbumCT() {
         return photoKit.album.abCT;
+    }
+
+    public String getMemberIdList() {
+        return photoKit.album.memberIdList;
     }
 }

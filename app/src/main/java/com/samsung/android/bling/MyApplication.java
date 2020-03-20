@@ -10,7 +10,9 @@ public class MyApplication extends Application {
 
     private static final String TAG = "Bling/MyApplication";
 
-    public static Intent sServiceIntent;
+    private static Intent sServiceIntent;
+
+    private static String sPhotoKitNfc = "123456789";
 
     @Override
     public void onCreate() {
@@ -18,6 +20,10 @@ public class MyApplication extends Application {
 
         Log.d(TAG, "jjh Application start");
         sServiceIntent = new Intent(getApplicationContext(), BlingService.class);
+    }
+
+    public static String getPhotoKitNfc() {
+        return sPhotoKitNfc;
     }
 
     public static Intent getServiceIntent() {

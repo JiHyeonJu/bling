@@ -61,9 +61,12 @@ public class PhotoKitViewHolder extends RecyclerView.ViewHolder {
         view.findViewById(R.id.image).getLayoutParams().width = imageSize;
         view.findViewById(R.id.image).getLayoutParams().height = imageSize;
 
+        view.findViewById(R.id.selected).getLayoutParams().width = imageSize;
+        view.findViewById(R.id.selected).getLayoutParams().height = imageSize;
+
         int paddingEnd = (displayWidth - (imageSize * 3)) / 2;
 
-        Log.d(TAG, displayWidth + "," + imageSize + "," + paddingEnd);
+        //Log.d(TAG, displayWidth + "," + imageSize + "," + paddingEnd);
         view.findViewById(R.id.photo_kit_layout).setPaddingRelative(0, 0, paddingEnd,
                 mContext.getResources().getDimensionPixelSize(R.dimen.photo_kit_padding_bottom));
 
@@ -115,6 +118,16 @@ public class PhotoKitViewHolder extends RecyclerView.ViewHolder {
             mGridLayout.getChildAt(i).findViewById(R.id.locked).setVisibility(View.VISIBLE);
             mGridLayout.getChildAt(i).findViewById(R.id.selected).setVisibility(View.GONE);
             mMemberUrl[i] = "";
+        }
+    }
+
+    public void setSelectedPhotoKit(int memberCount, int member) {
+        for (int i = 0; i < memberCount; i++) {
+            if (member == i) {
+                mGridLayout.getChildAt(i).findViewById(R.id.selected).setVisibility(View.VISIBLE);
+            } else {
+                mGridLayout.getChildAt(i).findViewById(R.id.selected).setVisibility(View.GONE);
+            }
         }
     }
 

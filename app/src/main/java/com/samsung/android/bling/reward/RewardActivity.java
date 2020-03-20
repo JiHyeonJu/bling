@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
+import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
@@ -18,12 +19,15 @@ import com.samsung.android.bling.chart.ChartActivity;
 import com.samsung.android.bling.data.AlbumItemVo;
 import com.samsung.android.bling.data.AlbumVo;
 import com.samsung.android.bling.data.PhotoKitItemVo;
+import com.samsung.android.bling.data.PhotoKitListVo;
 import com.samsung.android.bling.data.PhotoKitVo;
 
 import java.util.ArrayList;
 
 public class RewardActivity extends Activity {
     private static final String TAG = "Bling/RewardActivity";
+
+    private static final String NO_PHOTOKIT = "-1";
 
     private RecyclerView mRecyclerView;
     private PhotoKitAdapter mAdapter;
@@ -32,6 +36,8 @@ public class RewardActivity extends Activity {
 
     private ArrayList<AlbumItemVo> mAlbumList;
     private ArrayList<PhotoKitItemVo> mPhotoKitList;
+
+    int mSelectedPhotoKitAlbum, mSelectedPhotoKitMember;
 
     private String mId;
 
@@ -45,16 +51,16 @@ public class RewardActivity extends Activity {
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
 
-        getData();
-
         initView();
+
+        getData();
     }
 
     private void getData() {
         retroClient.getAlbumData(new RetroCallback() {
             @Override
             public void onError(Throwable t) {
-                Log.d(TAG, "onCreate() onError : " + t.toString());
+                Log.d(TAG, "getData() getAlbumData onError : " + t.toString());
                 t.printStackTrace();
             }
 
@@ -65,41 +71,76 @@ public class RewardActivity extends Activity {
 
                 mAdapter.setAlbumList(mAlbumList);
 
-                for (AlbumItemVo item : mAlbumList) {
+                /*for (AlbumItemVo item : mAlbumList) {
                     Log.d(TAG, item.getTitle());
-                }
+                }*/
             }
 
             @Override
             public void onFailure(int code, Object errorData) {
-                Log.d(TAG, "onCreate() onFailure : " + code);
+                Log.d(TAG, "getData() getAlbumData onFailure : " + code);
             }
         });
 
         retroClient.getUserPhotoKitList(mId, new RetroCallback() {
             @Override
             public void onError(Throwable t) {
-                Log.d(TAG, "onCreate() onError : " + t.toString());
+                Log.d(TAG, "getData() getUserPhotoKitList onError : " + t.toString());
                 t.printStackTrace();
             }
 
             @Override
             public void onSuccess(int code, Object receivedData) {
-                PhotoKitVo photoKits = (PhotoKitVo) receivedData;
+                PhotoKitListVo photoKits = (PhotoKitListVo) receivedData;
                 mPhotoKitList = photoKits.getList();
 
                 mAdapter.setPhotoKitList(mPhotoKitList);
 
-                for (PhotoKitItemVo item : mPhotoKitList) {
+                /*for (PhotoKitItemVo item : mPhotoKitList) {
                     Log.d(TAG, mPhotoKitList.size() + "," + item.getMemberId() + "," + item.getAlbumCT());
-                }
+                }*/
             }
 
             @Override
             public void onFailure(int code, Object errorData) {
-                Log.d(TAG, "onCreate() onFailure : " + code);
+                Log.d(TAG, "getData() getUserPhotoKitList onFailure : " + code);
             }
         });
+
+        String nfcInfo = MyApplication.getPhotoKitNfc();
+        if (NO_PHOTOKIT.equals(nfcInfo)) {
+            mAdapter.setSelectedPhotoKit(-1, -1);
+        } else {
+            retroClient.getPhotoKitDataFromNfc(nfcInfo, new RetroCallback() {
+                @Override
+                public void onError(Throwable t) {
+                    Log.d(TAG, "getData() getPhotoKitDataFromNfc onError : " + t.toString());
+                    t.printStackTrace();
+                }
+
+                @Override
+                public void onSuccess(int code, Object receivedData) {
+                    PhotoKitVo photoKit = ((PhotoKitVo) receivedData);
+
+                    mSelectedPhotoKitAlbum = photoKit.getAlbumCT();
+                    mSelectedPhotoKitMember = getIndexFromIdList(photoKit.getMemberIdList(), photoKit.getMemberId());
+
+                    mAdapter.setSelectedPhotoKit(mSelectedPhotoKitAlbum, mSelectedPhotoKitMember);
+                    //((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(mSelectedPhotoKitAlbum - 1, 200);
+                    //mRecyclerView.getLayoutManager().smoothScrollToPosition(mRecyclerView, new RecyclerView.State(), mSelectedPhotoKitAlbum - 1);
+                    new Handler().postDelayed(() -> {
+                        mRecyclerView.scrollToPosition(mSelectedPhotoKitAlbum - 1);
+                    }, 5);
+
+                    Log.d(TAG, "selectedPhotoKitAlbum : " + mSelectedPhotoKitAlbum + ", selectedPhotoKitMember" + mSelectedPhotoKitMember);
+                }
+
+                @Override
+                public void onFailure(int code, Object errorData) {
+                    Log.d(TAG, "getData() getPhotoKitDataFromNfc onFailure : " + code);
+                }
+            });
+        }
     }
 
     private void initView() {
@@ -128,5 +169,20 @@ public class RewardActivity extends Activity {
         super.onBackPressed();
 
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    private int getIndexFromIdList(String idList, String id) {
+        int index = 1;
+        if (idList.length() > 0) {
+            String[] ids = idList.split("\\|");
+            for (int i = 0; i < ids.length; i++) {
+                if (ids[i].equals(id)) {    // 멤버아이디리스트에서 해당 포토키트의 아이디를 찾으면(등록된 포토키트 위치면)
+                    index = i;
+                    Log.d(TAG, "selected photokit memeber : " + index);
+                    break;
+                }
+            }
+        }
+        return index;
     }
 }

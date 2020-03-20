@@ -3,6 +3,7 @@ package com.samsung.android.bling.Retrofit;
 import android.content.Context;
 
 import com.samsung.android.bling.data.AlbumVo;
+import com.samsung.android.bling.data.PhotoKitListVo;
 import com.samsung.android.bling.data.PhotoKitVo;
 import com.samsung.android.bling.data.StarInfoVo;
 import com.samsung.android.bling.data.StarMemberInfoVo;
@@ -223,6 +224,26 @@ public class RetroClient {
     // ]] 05. Album : Album Controller
 
 
+    // [[ 06. PhotoKit : Photo Kit Controller
+    public void getPhotoKitDataFromNfc(String nfcInfo, final RetroCallback callback) {
+        apiService.getPhotoKitDataFromNfc(nfcInfo).enqueue(new Callback<PhotoKitVo>() {
+            @Override
+            public void onResponse(Call<PhotoKitVo> call, Response<PhotoKitVo> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.code(), response.body());
+                } else {
+                    callback.onFailure(response.code(), response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhotoKitVo> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+    // ]] 06. PhotoKit : Photo Kit Controller
+
     // [[ 08. Login : Login Controller
     public void getUserDataFromLogin(HashMap<String, Object> parameters, final RetroCallback callback) {
         apiService.getUserDataFromLogin(parameters).enqueue(new Callback<UserInfoVo>() {
@@ -264,9 +285,9 @@ public class RetroClient {
 
     // [[ 09. PhotoKitReg : Photo Kit Reg Controller
     public void getUserPhotoKitList(String id, final RetroCallback callback) {
-        apiService.getUserPhotoKitList(id).enqueue(new Callback<PhotoKitVo>() {
+        apiService.getUserPhotoKitList(id).enqueue(new Callback<PhotoKitListVo>() {
             @Override
-            public void onResponse(Call<PhotoKitVo> call, Response<PhotoKitVo> response) {
+            public void onResponse(Call<PhotoKitListVo> call, Response<PhotoKitListVo> response) {
                 if (response.isSuccessful()) {
                     callback.onSuccess(response.code(), response.body());
                 } else {
@@ -275,7 +296,7 @@ public class RetroClient {
             }
 
             @Override
-            public void onFailure(Call<PhotoKitVo> call, Throwable t) {
+            public void onFailure(Call<PhotoKitListVo> call, Throwable t) {
                 callback.onError(t);
             }
         });
