@@ -62,7 +62,7 @@ public class Utils {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.bling_status_icon)
                         .setContentTitle(title)
                         .setContentText(messageBody)
                         .setAutoCancel(true)
