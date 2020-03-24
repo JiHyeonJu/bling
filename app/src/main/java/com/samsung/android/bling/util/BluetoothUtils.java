@@ -24,7 +24,7 @@ public class BluetoothUtils {
     public static final UUID TX_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e");
 
     public static final int REQUEST_ENABLE_BT = 1;
-    public static final String BT_NAME = "JBL Pulse 3";    //7C:96:D2:25:DE:1D
+    public static final String BT_NAME = "Bling";    //7C:96:D2:25:DE:1D
     public static final String BT_ADDRESS = "D0:E3:25:85:F7:BE";
 
     public static void checkBluetooth(Context context) {
@@ -97,14 +97,14 @@ public class BluetoothUtils {
         }
     }
 
-    public static void writeCharacteristic_Data(BluetoothGatt bluetoothGatt, byte[] data, UUID uuid) {
+    public static void writeCharacteristic_Data(BluetoothGatt bluetoothGatt, byte[] data) {
         if (bluetoothGatt != null) {
-            BluetoothGattService service = bluetoothGatt.getService(BluetoothUtils.SERVICE_UUID);
+            BluetoothGattService service = bluetoothGatt.getService(SERVICE_UUID);
             if (service == null) {
                 Log.d(TAG, "ERROR - no service");
                 return;
             }
-            BluetoothGattCharacteristic Char = service.getCharacteristic(uuid);
+            BluetoothGattCharacteristic Char = service.getCharacteristic(RX_UUID);
             if (Char == null) {
                 Log.d(TAG, "ERROR - no characteristic");
                 return;

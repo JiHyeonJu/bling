@@ -49,6 +49,9 @@ public class BlingService extends Service {
     private boolean mIsStar;
     private String mStarId = "1";
     private String mMemberId;
+    private int mMemberColor;
+    private int mCurrentColor;
+    private int mBrightness;
 
     public class BTBinder extends Binder {
         public BlingService getService() { // 서비스 객체를 리턴
@@ -91,10 +94,6 @@ public class BlingService extends Service {
                     Log.d(TAG, "Service not available");
                     return;
                 }
-                List<BluetoothGattCharacteristic> charlist = service.getCharacteristics();
-                for (BluetoothGattCharacteristic characteristic : charlist) {
-                    Log.d(TAG, ("chars : " + characteristic.getUuid().toString()));
-                }
 
                 BluetoothGattCharacteristic Char = service.getCharacteristic(BluetoothUtils.TX_UUID);
                 if (Char == null) {
@@ -117,19 +116,44 @@ public class BlingService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             if (characteristic.getUuid().equals(BluetoothUtils.TX_UUID)) {
                 final byte[] data = characteristic.getValue();
-                Log.d(TAG, "datalen : " + data.length);
+                //Log.d(TAG, "datalen : " + data.length);
+
+                if (mIsStar) {
+                    switch (data[0]) {
+                        case (byte) 0xCC:
+                            // 스타의 경우 터치할때 자기꺼 조명 빛을 자기꺼 컬러로 바꾼다
+                            Log.d(TAG, "touch set my color" + Utils.getHexCode(mMemberColor));
+                            byte[] tx_data = new byte[4];
+                            tx_data[0] = (byte) 0xCC;
+
+                            int color = mMemberColor;
+                            tx_data[1] = (byte) (Color.red(color) & 0xFF);
+                            tx_data[2] = (byte) (Color.green(color) & 0xFF);
+                            tx_data[3] = (byte) (Color.blue(color) & 0xFF);
+
+                            writeData(tx_data);
+
+                            break;
+                        case (byte) 0xAA:
+                            // 스타가 손을 대면 publish 1, 떼면 publish 0
+                            Log.d(TAG, "touch data : " + data[1] + mIsStar);
+                            if (1 == data[1]) {
+                                mqttTouchPublish("1|" + mMemberColor);
+                            } else {
+                                mqttTouchPublish("0");
+                            }
+
+                            break;
+                    }
+                }
             }
         }
 
         @Override
-        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor,
+                                      int status) {
             if (descriptor.getCharacteristic().getUuid().equals(BluetoothUtils.TX_UUID)) {
                 Log.d(TAG, "onDescriptorWrite()");
-
-                /*byte[] tx_data = new byte[8];
-                tx_data[0] = (byte) 0xEA;
-                tx_data[1] = (byte) 1;
-                writeData(tx_data, BluetoothUtils.RX_UUID);*/
             }
         }
     };
@@ -141,7 +165,12 @@ public class BlingService extends Service {
 
         mIsStar = Utils.getIsStar(getApplicationContext());
         mMemberId = Utils.getPreference(getApplicationContext(), "ID");
-        Log.d(TAG, "isStar?" + mIsStar + "mMemberId" + mMemberId);
+
+        mMemberColor = Color.parseColor(Utils.getPreference(getApplicationContext(), "MemberColor"));
+        mCurrentColor = Utils.getCurrentColor(getApplicationContext());
+        mBrightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
+        Log.d(TAG, "isStar? " + mIsStar + ", mMemberId :" + mMemberId + ", mMemberColor(hex) :" + Utils.getHexCode(mMemberColor) +
+                ", mCurrentColor(hex) :" + Utils.getHexCode(mCurrentColor) + ", bright :" + mBrightness);
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
 
@@ -152,23 +181,6 @@ public class BlingService extends Service {
                 true, 1002, "Bling", msg);
         startForeground(1002, notificationBuilder.build());
     }
-
-    /*Boolean Go = true;
-    Thread thread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            int i = 1;
-
-            while (Go) {
-                Log.d("jjh", "i : " + i++);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });*/
 
     @Override
     public void onDestroy() {
@@ -187,8 +199,11 @@ public class BlingService extends Service {
 
         updateStarStatus(mIsStar, mMemberId, "off");
 
-        /*Log.d("jjh", "stop thread");
-        Go = false;*/
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.disconnect();
+            mBluetoothGatt.close();
+            mBluetoothGatt = null;
+        }
 
         super.onDestroy();
     }
@@ -239,8 +254,8 @@ public class BlingService extends Service {
         }
     }
 
-    private void writeData(byte[] data, UUID uuid) {
-        BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data, uuid);
+    private void writeData(byte[] data) {
+        BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data);
     }
 
     public void sendColorToLed(int currentColor) {
@@ -256,10 +271,24 @@ public class BlingService extends Service {
         tx_data[6] = (byte) (isOn[6] | isOn[7] << 1 | isOn[8] << 2);
 
         Log.d("jjh", "sendColor" + Utils.getHexCode(currentColor));
-        writeData(tx_data, BluetoothUtils.RX_UUID);
+        writeData(tx_data);
     }
 
-    public void sendColorToLight2(int currentColor) {
+    public void constantSet(int color) {
+        byte[] tx_data = new byte[4];
+        tx_data[0] = (byte) 0xCA;
+
+        // 기기쪽 constant만 RBG로 되어있을것임 -_-
+        tx_data[1] = (byte) (Color.red(color) & 0xFF);
+        tx_data[2] = (byte) (Color.blue(color) & 0xFF);
+        tx_data[3] = (byte) (Color.green(color) & 0xFF);
+
+        Log.d("jjh", "constantSet " + Utils.getHexCode(color));
+        //Log.d("jjhhhhhh", Utils.getHexCode(color) + "...." + tx_data[1] + "," + tx_data[2] + "," + tx_data[3]);
+        writeData(tx_data);
+    }
+
+    /*public void sendColorToLight2(int currentColor) {
         byte[] b = new byte[3];
         b[0] = (byte) (currentColor & 0xFF);
         b[1] = (byte) ((currentColor >> 8) & 0xFF);
@@ -274,29 +303,14 @@ public class BlingService extends Service {
         b[1] = (byte) (value & 0xFF);
 
         writeData(b, BluetoothUtils.RX_ANO_UUID);
-    }
+    }*/
 
     public void setOnOffLight(int value) {
         byte[] tx_data = new byte[8];
         tx_data[0] = (byte) 0xEA;
         tx_data[1] = (byte) value;
 
-        writeData(tx_data, BluetoothUtils.RX_UUID);
-    }
-
-    public void intensityControl(int r, int g, int b) {
-        byte[] tx_data = new byte[8];
-        byte[] isOn = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-
-        tx_data[0] = (byte) 0x20; // intensity control protocol
-        tx_data[1] = (byte) (r & 0xFF);
-        tx_data[2] = (byte) (g & 0xFF);
-        tx_data[3] = (byte) (b & 0xFF);
-        tx_data[4] = (byte) (isOn[0] | isOn[1] << 1 | isOn[2] << 2);
-        tx_data[5] = (byte) (isOn[3] | isOn[4] << 1 | isOn[5] << 2);
-        tx_data[6] = (byte) (isOn[6] | isOn[7] << 1 | isOn[8] << 2);
-
-        writeData(tx_data, BluetoothUtils.RX_UUID);
+        writeData(tx_data);
     }
 
     private void mqttConnect() {
@@ -352,14 +366,17 @@ public class BlingService extends Service {
                         // 터치 관련 메시지를 받을때
                         if (!mIsStar) {
                             // 팬만 받아서 동작함
-                            if ("1".equals(message.toString())) {
-                                //sendColorToLed(Color.WHITE);
-                            } else {
-                                /*float[] hsv = new float[3];
-                                Color.colorToHSV(color, hsv);
-                                hsv[2] = (float) brightness / 100000000;
+                            String[] data = message.toString().split("\\|");
 
-                                sendColorToLed(Color.HSVToColor(hsv));*/
+                            if ("1".equals(data[0])) {
+                                int color = Integer.parseInt(data[1]);
+                                sendColorToLed(color);
+                            } else {
+                                float[] hsv = new float[3];
+                                Color.colorToHSV(mCurrentColor, hsv);
+                                hsv[2] = (float) mBrightness / 100000000;
+
+                                sendColorToLed(Color.HSVToColor(hsv));
                             }
                             Log.d(TAG, "Mqtt messageArrived() touch : " + message.toString());
                         }

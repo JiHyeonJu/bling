@@ -58,6 +58,12 @@ public class SigninActivity extends AppCompatActivity {
         Intent intent = new Intent(SigninActivity.this, MainActivity.class);
 
         if (!FIRST_LOGIN.equals(id)) {
+            if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
+                    && BluetoothUtils.isBlingConnected()) {
+                Log.d(TAG, "start service");
+                startForegroundService(MyApplication.getServiceIntent());
+            }
+
             intent.putExtra("ID", id);
             intent.putExtra("isStar", isStar);
             startActivity(intent);
@@ -158,7 +164,7 @@ public class SigninActivity extends AppCompatActivity {
                         StarMemberInfoVo data = (StarMemberInfoVo) receivedData;
 
                         if (data.isSuccess()) {
-                            onSignInClick(intent, data.getID(), true);
+                            onSignInClick(intent, data.getID(), data.getMemberColor(), true);
                         } else {
                             Toast.makeText(SigninActivity.this, data.getMsg(), Toast.LENGTH_LONG).show();
                         }
@@ -202,7 +208,7 @@ public class SigninActivity extends AppCompatActivity {
                         UserInfoVo data = (UserInfoVo) receivedData;
 
                         if (data.isSuccess()) {
-                            onSignInClick(intent, data.getID(), false);
+                            onSignInClick(intent, data.getID(), "#000000", false);
                         } else {
                             Toast.makeText(SigninActivity.this, data.getMsg(), Toast.LENGTH_LONG).show();
                         }
@@ -237,7 +243,7 @@ public class SigninActivity extends AppCompatActivity {
         });
     }
 
-    private void onSignInClick(Intent intent, String id, boolean isStar) {
+    private void onSignInClick(Intent intent, String id, String color, boolean isStar) {
         // todo: must be changed
         if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
                 && BluetoothUtils.isBlingConnected()) {
@@ -246,6 +252,7 @@ public class SigninActivity extends AppCompatActivity {
         }
 
         Utils.savePreference(getApplicationContext(), "ID", id);
+        Utils.savePreference(getApplicationContext(), "MemberColor", color);
         //Log.d(TAG, id);
 
         intent.putExtra("ID", id);

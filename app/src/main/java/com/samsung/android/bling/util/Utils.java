@@ -162,7 +162,7 @@ public class Utils {
         return str;
     }
 
-    public static void setList(Context context, String tag, Queue<String> data) {
+    public static void setColorList(Context context, Queue<String> data) {
         // int array to string
         String str = "";
         while (!data.isEmpty()) {
@@ -173,14 +173,14 @@ public class Utils {
         // save sharedpreference
         SharedPreferences pref = context.getSharedPreferences("blingData", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString(tag, str);
+        editor.putString("savedColor", str);
         editor.commit();
     }
 
-    public static Queue<String> getList(Context context, String tag) {
+    public static Queue<String> getColorList(Context context) {
         // get info from sharedpreference
         SharedPreferences pref = context.getSharedPreferences("blingData", Activity.MODE_PRIVATE);
-        String str = pref.getString(tag, "");
+        String str = pref.getString("savedColor", "");
 
         Queue<String> data = new LinkedList<>();
 
@@ -195,6 +195,36 @@ public class Utils {
         }
 
         return data;
+    }
+
+    public static int getCurrentColor(Context context) {
+        int currentColor = Color.WHITE;
+
+        Queue<String> colorQueue = new LinkedList<>();
+        colorQueue = Utils.getColorList(context);
+
+        int selectedColorIndex = Integer.parseInt(Utils.getPreference(context, "selectedColorIndex"));
+        if (selectedColorIndex == -1) {
+            selectedColorIndex = 0;
+        }
+
+        for (int i = 7; i >= 0; i--) {
+            if (i == selectedColorIndex) {
+                if (i < colorQueue.size()) {
+                    currentColor = Color.parseColor(colorQueue.poll());
+                } else if (i == colorQueue.size()) {
+                    currentColor = Color.WHITE;
+                } else if (i == colorQueue.size() + 1) {
+                    currentColor = Color.parseColor("#FFF8DA");
+                }
+            } else {
+                if (i < colorQueue.size()) {
+                    colorQueue.poll();
+                }
+            }
+        }
+
+        return currentColor;
     }
 
     public static boolean isMyServiceRunning(Context context, Class<?> serviceClass) {

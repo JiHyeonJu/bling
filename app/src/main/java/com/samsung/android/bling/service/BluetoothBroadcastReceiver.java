@@ -17,7 +17,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
 
     private static final String FIRST_LOGIN = "-1";
 
-    public static final String BT_NAME = "JBL Pulse 3";    //7C:96:D2:25:DE:1D
+    public static final String BT_NAME = "Bling";    //7C:96:D2:25:DE:1D
     public static final String BT_ADDRESS = "D0:E3:25:85:F7:BE";
 
     @Override

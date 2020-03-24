@@ -388,6 +388,7 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.yes).setOnClickListener(v -> {
             Utils.savePreference(getApplicationContext(), "ID", FIRST_LOGIN);
+            Utils.savePreference(getApplicationContext(), "MemberColor", FIRST_LOGIN);
 
             Utils.dismissDialog(mAlertDialog);
 
@@ -411,6 +412,7 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.yes).setOnClickListener(v -> {
             Utils.savePreference(getApplicationContext(), "ID", FIRST_LOGIN);
+            Utils.savePreference(getApplicationContext(), "MemberColor", FIRST_LOGIN);
 
             Utils.dismissDialog(mAlertDialog);
 

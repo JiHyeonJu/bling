@@ -291,7 +291,14 @@ public class SettingActivity extends Activity {
                 Color.colorToHSV(mCurrentColor, hsv);
                 hsv[2] = (float) mBrightness / 100000000;
 
-                mService.sendColorToLed(Color.HSVToColor(hsv));
+                try {
+                    int color = Color.HSVToColor(hsv);
+                    mService.sendColorToLed(color);
+                    Thread.sleep(10);
+                    mService.constantSet(color);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 Log.d(TAG, "Send mBrightness : " + mBrightness + ",hsv[2] : " + hsv[2]);
             }
         });
@@ -325,24 +332,16 @@ public class SettingActivity extends Activity {
             }
         });
 
-        findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
+        /*findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (mBound) {
                         mService.mqttTouchPublish("1");
-
-                        mService.sendColorToLed(Color.WHITE);
                     }
                     break;
                 case MotionEvent.ACTION_UP:
                     if (mBound) {
                         mService.mqttTouchPublish("0");
-
-                        float[] hsv = new float[3];
-                        Color.colorToHSV(mCurrentColor, hsv);
-                        hsv[2] = (float) mBrightness / 100000000;
-
-                        mService.sendColorToLed(Color.HSVToColor(hsv));
                     }
                     break;
             }
@@ -350,7 +349,7 @@ public class SettingActivity extends Activity {
             //mService.intensityControl(r, g, b);
             //mService.setOnOffLight(1 or 0);
             return true;
-        });
+        });*/
 
         findViewById(R.id.clean_canvas).setOnClickListener(v -> {
             mCanvas.cleanCanvas();
@@ -464,7 +463,7 @@ public class SettingActivity extends Activity {
                     colorQueue.remove();
                 }
                 colorQueue.offer(mCurrentColorHex);
-                Utils.setList(getApplicationContext(), "savedColor", colorQueue);
+                Utils.setColorList(getApplicationContext(), colorQueue);
 
                 setColorScrollView();
                 setColorCheckbox(0);
@@ -474,7 +473,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setColorScrollView() {
-        colorQueue = Utils.getList(getApplicationContext(), "savedColor");
+        colorQueue = Utils.getColorList(getApplicationContext());
         int savedColorCount = colorQueue.size();
 
         for (int i = 7; i >= 0; i--) {
@@ -492,7 +491,7 @@ public class SettingActivity extends Activity {
         Utils.setDrawableColor(((FrameLayout) mColorScrollLayout.getChildAt(savedColorCount + 1)).getChildAt(0), Color.parseColor("#FFF8DA"));
         setColorScrollOnClickListener(savedColorCount, true);
         setColorScrollOnClickListener(savedColorCount + 1, true);
-        colorQueue = Utils.getList(getApplicationContext(), "savedColor");
+        colorQueue = Utils.getColorList(getApplicationContext());
     }
 
     private void setColorScrollOnClickListener(int index, boolean clickable) {
@@ -510,7 +509,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setColorCheckbox(int index) {
-        colorQueue = Utils.getList(getApplicationContext(), "savedColor");
+        colorQueue = Utils.getColorList(getApplicationContext());
 
         for (int i = 7; i >= 0; i--) {
             if (i == index) {
@@ -531,7 +530,7 @@ public class SettingActivity extends Activity {
                 }
             }
         }
-        colorQueue = Utils.getList(getApplicationContext(), "savedColor");
+        colorQueue = Utils.getColorList(getApplicationContext());
         Utils.savePreference(this, "selectedColorIndex", String.valueOf(index));
 
         ImageView checkboxView = (ImageView) ((FrameLayout) mColorScrollLayout.getChildAt(index)).getChildAt(1);
@@ -547,7 +546,14 @@ public class SettingActivity extends Activity {
             Color.colorToHSV(mCurrentColor, hsv);
             hsv[2] = (float) mBrightness / 100000000;
 
-            mService.sendColorToLed(Color.HSVToColor(hsv));
+            try {
+                int color = Color.HSVToColor(hsv);
+                mService.sendColorToLed(color);
+                Thread.sleep(10);
+                mService.constantSet(color);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
