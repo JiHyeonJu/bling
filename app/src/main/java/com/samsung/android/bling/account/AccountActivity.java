@@ -372,6 +372,8 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.done).setOnClickListener((v -> {
             mColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
+            BlingService.mMemberColor = mCurrentColor;
+            Utils.savePreference(getApplicationContext(), "MemberColor", mCurrentColorHex);
 
             updateData(setParameters(mUserId, mPassword, mName, mCurrentColorHex, mStarId));
 

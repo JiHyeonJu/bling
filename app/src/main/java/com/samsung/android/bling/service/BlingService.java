@@ -49,7 +49,8 @@ public class BlingService extends Service {
     private boolean mIsStar;
     private String mStarId = "1";
     private String mMemberId;
-    private int mMemberColor;
+
+    public static int mMemberColor;
     private int mCurrentColor;
     private int mBrightness;
 
@@ -89,24 +90,29 @@ public class BlingService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                BluetoothGattService service = mBluetoothGatt.getService(BluetoothUtils.SERVICE_UUID);
-                if (service == null) {
-                    Log.d(TAG, "Service not available");
-                    return;
+                List<BluetoothGattService> servicelist = mBluetoothGatt.getServices();
+                for (BluetoothGattService service : servicelist) {
+                    Log.d(TAG, "service - " + service.getUuid().toString());
+
+                    if (service.getUuid().equals(BluetoothUtils.SERVICE_UUID)) {
+                        List<BluetoothGattCharacteristic> charlist = service.getCharacteristics();
+
+                        for (BluetoothGattCharacteristic Char : charlist) {
+                            Log.d(TAG, ("chars : " + Char.getUuid().toString()));
+
+                            if (Char.getUuid().equals(BluetoothUtils.TX_UUID)) {
+                                mBluetoothGatt.setCharacteristicNotification(Char, true);
+                                BluetoothGattDescriptor desc = Char.getDescriptor(BluetoothUtils.CCCD);
+
+                                desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                mBluetoothGatt.writeDescriptor(desc);
+
+                                Log.d(TAG, "BLING TX UUID OK");
+                            }
+                        }
+                        Log.d(TAG, "BLING SERVICE UUID OK");
+                    }
                 }
-
-                BluetoothGattCharacteristic Char = service.getCharacteristic(BluetoothUtils.TX_UUID);
-                if (Char == null) {
-                    Log.d(TAG, "TX Char UUID not available");
-                    return;
-                }
-
-                mBluetoothGatt.setCharacteristicNotification(Char, true);
-                BluetoothGattDescriptor desc = Char.getDescriptor(BluetoothUtils.CCCD);
-                desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                mBluetoothGatt.writeDescriptor(desc);
-
-                Log.d(TAG, "Service discover OK");
             } else {
                 Log.d(TAG, "GATT Failed");
             }
@@ -118,10 +124,10 @@ public class BlingService extends Service {
                 final byte[] data = characteristic.getValue();
                 //Log.d(TAG, "datalen : " + data.length);
 
-                if (mIsStar) {
-                    switch (data[0]) {
-                        case (byte) 0xCC:
-                            // 스타의 경우 터치할때 자기꺼 조명 빛을 자기꺼 컬러로 바꾼다
+                switch (data[0]) {
+                    case (byte) 0xCC:
+                        // 스타의 경우 터치할때 자기꺼 조명 빛을 자기꺼 컬러로 바꾼다
+                        if (mIsStar) {
                             Log.d(TAG, "touch set my color" + Utils.getHexCode(mMemberColor));
                             byte[] tx_data = new byte[4];
                             tx_data[0] = (byte) 0xCC;
@@ -132,19 +138,33 @@ public class BlingService extends Service {
                             tx_data[3] = (byte) (Color.blue(color) & 0xFF);
 
                             writeData(tx_data);
-
-                            break;
-                        case (byte) 0xAA:
-                            // 스타가 손을 대면 publish 1, 떼면 publish 0
+                        }
+                        break;
+                    case (byte) 0xAA:
+                        // 스타가 손을 대면 publish 1, 떼면 publish 0
+                        if (mIsStar) {
                             Log.d(TAG, "touch data : " + data[1] + mIsStar);
                             if (1 == data[1]) {
                                 mqttTouchPublish("1|" + mMemberColor);
                             } else {
                                 mqttTouchPublish("0");
                             }
+                        }
+                        break;
+                    case (byte) 0xCD:
+                        int len = data[2];
+                        byte[] b = new byte[255];
+                        if (data[1] > 0) // detected
+                        {
+                            for (int i = 0; i < len; i++) b[i] = data[3 + i];
+                            String str = new String(b);
+                            str = str.trim();
 
-                            break;
-                    }
+                            Log.d(TAG, "nfc receive len: " + len + " data: " + str);
+                        } else {
+                            Log.d(TAG, "nfc not detected");
+                        }
+                        break;
                 }
             }
         }
