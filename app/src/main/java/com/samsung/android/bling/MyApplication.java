@@ -12,7 +12,7 @@ public class MyApplication extends Application {
 
     private static Intent sServiceIntent;
 
-    private static String sPhotoKitNfc = "123456789";
+    private static String sPhotoKitNfc = "-1";
 
     @Override
     public void onCreate() {
@@ -24,6 +24,10 @@ public class MyApplication extends Application {
 
     public static String getPhotoKitNfc() {
         return sPhotoKitNfc;
+    }
+
+    public static void setPhotoKitNfc(String nfcInfo) {
+        sPhotoKitNfc = nfcInfo;
     }
 
     public static Intent getServiceIntent() {

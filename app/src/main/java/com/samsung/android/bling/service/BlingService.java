@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -19,6 +20,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
 import com.samsung.android.bling.util.BluetoothUtils;
@@ -53,6 +55,8 @@ public class BlingService extends Service {
     public static int mMemberColor;
     private int mCurrentColor;
     private int mBrightness;
+
+    private boolean mIsDrawing = false;
 
     public class BTBinder extends Binder {
         public BlingService getService() { // 서비스 객체를 리턴
@@ -127,7 +131,7 @@ public class BlingService extends Service {
                 switch (data[0]) {
                     case (byte) 0xCC:
                         // 스타의 경우 터치할때 자기꺼 조명 빛을 자기꺼 컬러로 바꾼다
-                        if (mIsStar) {
+                        if (mIsStar && !mIsDrawing) {
                             Log.d(TAG, "touch set my color" + Utils.getHexCode(mMemberColor));
                             byte[] tx_data = new byte[4];
                             tx_data[0] = (byte) 0xCC;
@@ -142,7 +146,7 @@ public class BlingService extends Service {
                         break;
                     case (byte) 0xAA:
                         // 스타가 손을 대면 publish 1, 떼면 publish 0
-                        if (mIsStar) {
+                        if (mIsStar && !mIsDrawing) {
                             Log.d(TAG, "touch data : " + data[1] + mIsStar);
                             if (1 == data[1]) {
                                 mqttTouchPublish("1|" + mMemberColor);
@@ -151,7 +155,47 @@ public class BlingService extends Service {
                             }
                         }
                         break;
+                    case (byte) 0xD0:
+                        if (mIsStar) {
+                            if (data[1] == 1) {
+                                // 드로잉 모드 시작
+                                mIsDrawing = true;
+                                mqttDrawingModePublish("1");
+                            } else if (data[1] == 0) {
+                                // 드로잉 모드 끝
+                                mIsDrawing = false;
+                                mqttDrawingModePublish("2");
+                            }
+                        }
+                        break;
+                    case (byte) 0xDA:
+                        // 기기로부터 스타의 드로잉이 들어옴
+                        if (mIsStar && mIsDrawing) {
+                            int xpos, ypos, action;
+
+                            xpos = (data[2] & 0xFF);
+                            xpos <<= 8;
+                            xpos |= (data[1] & 0xFF);
+                            ypos = (data[4] & 0xFF);
+                            ypos <<= 8;
+                            ypos |= (data[3] & 0xFF);
+                            action = data[5];
+                            Log.d(TAG, "X" + xpos + " Y" + ypos);
+                            xpos *= 2;
+                            ypos *= 2;
+
+                            // 세팅 캔버스에 그리기위해 브로드캐스트, 테스트용으로 없어져도 됨
+                            Intent newIntent = new Intent("bling.service.action.STAR_DRAWING");
+                            newIntent.putExtra("msg", action + "|" + xpos + "|" + ypos + "|" + mMemberId);
+                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
+
+                            mqttDrawingPublish(action + "|" + xpos + "|" + ypos + "|" + mMemberId);
+
+                            Log.d(TAG, "drawing now : " + action + "|" + xpos + "|" + ypos + "|" + mMemberId);
+                        }
+                        break;
                     case (byte) 0xCD:
+                        // NFC 태그 새로 읽혔을때
                         int len = data[2];
                         byte[] b = new byte[255];
                         if (data[1] > 0) // detected
@@ -161,8 +205,10 @@ public class BlingService extends Service {
                             str = str.trim();
 
                             Log.d(TAG, "nfc receive len: " + len + " data: " + str);
+                            MyApplication.setPhotoKitNfc("123456789");
                         } else {
                             Log.d(TAG, "nfc not detected");
+                            MyApplication.setPhotoKitNfc("-1");
                         }
                         break;
                 }
@@ -303,8 +349,52 @@ public class BlingService extends Service {
         tx_data[2] = (byte) (Color.blue(color) & 0xFF);
         tx_data[3] = (byte) (Color.green(color) & 0xFF);
 
-        Log.d("jjh", "constantSet " + Utils.getHexCode(color));
-        //Log.d("jjhhhhhh", Utils.getHexCode(color) + "...." + tx_data[1] + "," + tx_data[2] + "," + tx_data[3]);
+        Log.d("jjh", "constantSet " + Utils.getHexCode(color) + "...." + tx_data[1] + "," + tx_data[2] + "," + tx_data[3]);
+        writeData(tx_data);
+    }
+
+    public void sendDrawingMode(int mode) {
+        byte[] tx_data = new byte[8];
+        tx_data[0] = (byte) 0xE0;
+        tx_data[1] = (byte) mode;
+        writeData(tx_data);
+    }
+
+    public void sendLcdDrawing(int state, int x, int y, int memberIndex) {
+        int action;
+        byte[] tx_data = new byte[16];
+        if (state == MotionEvent.ACTION_DOWN) {
+            action = 0;
+        } else if (state == MotionEvent.ACTION_MOVE) {
+            action = 1;
+        } else {
+            action = 2;
+        }
+
+        tx_data[0] = 0x30; // lcd control
+        tx_data[1] = (byte) 0xAA; // screen drawing
+        tx_data[2] = (byte) action;
+        tx_data[3] = (byte) (x & 0xFF);
+        tx_data[4] = (byte) ((x >> 8) & 0xFF);
+        tx_data[5] = (byte) (y & 0xFF);
+        tx_data[6] = (byte) ((y >> 8) & 0xFF);
+        tx_data[7] = (byte) (Color.red(mMemberColor) & 0xff);
+        tx_data[8] = (byte) (Color.green(mMemberColor) & 0xff);
+        tx_data[9] = (byte) (Color.blue(mMemberColor) & 0xff);
+        tx_data[10] = (byte) (4 & 0xff);
+        tx_data[11] = (byte) (memberIndex & 0xff);
+
+        writeData(tx_data);
+
+        Log.d(TAG, "sendLcdDrawing " + x + "," + y + "," + memberIndex);
+    }
+
+    public void sendCleanLcd() {
+        byte[] tx_data = new byte[8];
+
+        tx_data[0] = 0x30; // lcd control
+        tx_data[1] = (byte) (0xCE); // screen clear
+
         writeData(tx_data);
     }
 
@@ -353,6 +443,7 @@ public class BlingService extends Service {
             mMqttClient.subscribe("/bling/star/" + mStarId + "/conn");
             mMqttClient.subscribe("/bling/star/" + mStarId + "/msg/touch");
             mMqttClient.subscribe("/bling/star/" + mStarId + "/msg/drawing");
+            mMqttClient.subscribe("/bling/star/" + mStarId + "/msg/drawingmode");
             mMqttClient.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
@@ -403,11 +494,21 @@ public class BlingService extends Service {
                     } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawing")) {
                         if (!mIsStar) {
                             // 팬만 받아서 동작함
-                            Log.d(TAG, "Mqtt messageArrived() drawing : " + message.toString());
+                            String[] point = message.toString().split("\\|");
+                            sendLcdDrawing(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]), Integer.parseInt(point[3]));
 
+                            // 세팅 캔버스에 그리기위해 브로드캐스트, 테스트용으로 없어져도 됨
                             newIntent = new Intent("bling.service.action.STAR_DRAWING");
                             newIntent.putExtra("msg", message.toString());
                             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
+
+                            Log.d(TAG, "Mqtt messageArrived() drawing : " + message.toString());
+                        }
+                    } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawingmode")) {
+                        if (!mIsStar) {
+                            sendDrawingMode(Integer.parseInt(message.toString()));
+
+                            Log.d(TAG, "Mqtt messageArrived() drawingmode : " + message.toString());
                         }
                     }
                 }
@@ -435,13 +536,26 @@ public class BlingService extends Service {
         }
     }
 
+    public void mqttDrawingModePublish(String data) {
+        mqttConnect();
+
+        try {
+            //data = data + "|" + mMemberId;
+            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawingmode", new MqttMessage(data.getBytes()));
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawingmode : " + data);
+        } catch (Exception e) {
+            Log.d(TAG, "mqttDrawingPublish() : error");
+            e.printStackTrace();
+        }
+    }
+
     public void mqttDrawingPublish(String data) {
         mqttConnect();
 
         try {
             data = data + "|" + mMemberId;
             mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", new MqttMessage(data.getBytes()));
-            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing" + data);
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing : " + data);
         } catch (Exception e) {
             Log.d(TAG, "mqttDrawingPublish() : error");
             e.printStackTrace();

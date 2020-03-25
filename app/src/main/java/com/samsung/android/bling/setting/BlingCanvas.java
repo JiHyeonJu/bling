@@ -68,12 +68,12 @@ public class BlingCanvas extends View {
 
                 myPath.moveTo(x, y); // 자취에 그리지 말고 위치만 이동해라
 
-                mListener.onUserTouch(0, (int) x, (int) y);
+                mListener.onUserTouch(MotionEvent.ACTION_DOWN, (int) x, (int) y);
                 break;
             case MotionEvent.ACTION_MOVE:
                 myPath.lineTo(x, y); // 자취에 선을 그려라
 
-                mListener.onUserTouch(1, (int) x, (int) y);
+                mListener.onUserTouch(MotionEvent.ACTION_MOVE, (int) x, (int) y);
                 break;
             case MotionEvent.ACTION_UP:
                 this.getParent().requestDisallowInterceptTouchEvent(false);
@@ -87,17 +87,36 @@ public class BlingCanvas extends View {
     public void cleanCanvas() {
         myPath.reset();
 
-        mListener.onUserTouch(2, 0, 0);
+        for (int i = 0; i < 7; i++) {
+            mPath[i].reset();
+        }
+        mListener.onUserTouch(3, 0, 0);
 
         invalidate();
     }
 
     public void drawStarLine(int drawingInfo, int x, int y, int member) {
+        /*switch (drawingInfo) {
+            case MotionEvent.ACTION_DOWN:
+                mPath[member].moveTo(x, y);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mPath[member].lineTo(x, y);
+                break;
+            case MotionEvent.ACTION_UP:
+                //
+                break;
+            default:
+                mPath[member].reset();
+                break;
+        }*/
+
         if (drawingInfo == 0) {
             mPath[member].moveTo(x, y);
-        } else if (drawingInfo == 1) {
             mPath[member].lineTo(x, y);
-        } else if (drawingInfo == 2) {
+        } else if (drawingInfo == 1 || drawingInfo == 2) {
+            mPath[member].lineTo(x, y);
+        } else if (drawingInfo == 3) {
             mPath[member].reset();
         }
 

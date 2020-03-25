@@ -73,6 +73,8 @@ public class SettingActivity extends Activity {
     // will be removed
     private BlingCanvas mCanvas;
 
+    private boolean mIsStar;
+
     private boolean mBound = false;
     BlingService mService;
     ServiceConnection mConnection = new ServiceConnection() {
@@ -98,6 +100,8 @@ public class SettingActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mIsStar = Utils.getIsStar(getApplicationContext());
+
         setContentView(R.layout.activity_setting);
 
         initView();
@@ -314,14 +318,33 @@ public class SettingActivity extends Activity {
         mCanvas.setOnCanvasTouchListener(new BlingCanvas.CanvasTouchListener() {
             @Override
             public void onUserTouch(int action, int x, int y) {
+                // must be 0 ~ 319 , 0 ~ 239
+                if (x < 0) {
+                    x = 0;
+                }
+                if (x > 640 - 1) {
+                    x = 640 - 1;
+                }
+                x /= 2;
+
+                if (y < 0) {
+                    y = 0;
+                }
+                if (y > 480 - 1) {
+                    y = 480 - 1;
+                }
+                y /= 2;
+
+                final int xPos = x, yPos = y;
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String data = action + "|" + x + "|" + y;
-                        if (mBound) {
+                        String data = action + "|" + xPos + "|" + yPos;
+                        if (mIsStar && mBound) {
                             try {
                                 mService.mqttDrawingPublish(data);
-                                Thread.sleep(50);
+                                mService.sendLcdDrawing(action, xPos, yPos, 2);
+                                Thread.sleep(30);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -353,6 +376,9 @@ public class SettingActivity extends Activity {
 
         findViewById(R.id.clean_canvas).setOnClickListener(v -> {
             mCanvas.cleanCanvas();
+            if (mIsStar && mBound) {
+                mService.sendCleanLcd();
+            }
         });
         // ]] will be removed
     }
