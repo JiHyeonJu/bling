@@ -28,12 +28,16 @@ public class ChartActivity extends AppCompatActivity {
 
     private ArrayList<AlbumItemVo> mAlbumList;
 
+    private boolean mIsStar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chart);
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
+
+        mIsStar = Utils.getIsStar(getApplicationContext());
 
         initView();
 
@@ -64,6 +68,12 @@ public class ChartActivity extends AppCompatActivity {
     }
 
     private void initView() {
+        if (mIsStar) {
+            ((TextView) findViewById(R.id.cheering_description)).setText(getString(R.string.cheeringlights_description_star));
+        } else {
+            ((TextView) findViewById(R.id.cheering_description)).setText(getString(R.string.cheeringlights_description_fans));
+        }
+
         findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
         // set logo height
         Double logoViewHeight = (Utils.getDisplayHeight(this)
