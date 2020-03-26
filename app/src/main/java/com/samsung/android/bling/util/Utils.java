@@ -54,7 +54,7 @@ public class Utils {
 
     public static NotificationCompat.Builder showNotification(Context context, boolean isService, int notificationId, String title, String messageBody) {
         Intent intent = new Intent(context, SigninActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 

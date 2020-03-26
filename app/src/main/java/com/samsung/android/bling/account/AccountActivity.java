@@ -4,12 +4,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -56,6 +60,27 @@ public class AccountActivity extends AppCompatActivity {
     private String mId, mUserId, mPassword, mName, mColor, mStarId;
 
     private boolean mIsStar, mIsShownPassword, mIsShownPasswordCheck, isPasswordConfirmed, isNextClicked;
+
+    private boolean mBound = false;
+    BlingService mService;
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // 4.
+            Log.d(TAG, "onServiceConnected()");
+
+            BlingService.BTBinder binder = (BlingService.BTBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected()");
+
+            mBound = false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +153,25 @@ public class AccountActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        if (Utils.isMyServiceRunning(this, BlingService.class)) {
+            Intent Service = new Intent(getApplicationContext(), BlingService.class);
+            bindService(Service, mConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mBound && Utils.isMyServiceRunning(this, BlingService.class)) {
+            unbindService(mConnection);
+        }
+        mBound = false;
     }
 
     private void initView() {
@@ -372,7 +416,8 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.done).setOnClickListener((v -> {
             mColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
-            BlingService.mMemberColor = mCurrentColor;
+            mService.mMemberColor = mCurrentColor;
+            mService.sendLcdDrawing(2, 0, 0, 10);
             Utils.savePreference(getApplicationContext(), "MemberColor", mCurrentColorHex);
 
             updateData(setParameters(mUserId, mPassword, mName, mCurrentColorHex, mStarId));

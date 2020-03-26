@@ -343,7 +343,8 @@ public class SettingActivity extends Activity {
                         if (mIsStar && mBound) {
                             try {
                                 mService.mqttDrawingPublish(data);
-                                mService.sendLcdDrawing(action, xPos, yPos, 2);
+                                // memberIndex는 혹시 몰라서 일단 10으로 해놓음
+                                mService.sendLcdDrawing(action, xPos, yPos, 10);
                                 Thread.sleep(30);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
