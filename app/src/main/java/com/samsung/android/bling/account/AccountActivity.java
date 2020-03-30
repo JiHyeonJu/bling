@@ -2,11 +2,15 @@ package com.samsung.android.bling.account;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.accounts.Account;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -22,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.R;
@@ -60,6 +65,8 @@ public class AccountActivity extends AppCompatActivity {
     private String mId, mUserId, mPassword, mName, mColor, mStarId;
 
     private boolean mIsStar, mIsShownPassword, mIsShownPasswordCheck, isPasswordConfirmed, isNextClicked;
+
+    private AlertDialog mPhotoKitDialog;
 
     private boolean mBound = false;
     BlingService mService;
@@ -155,6 +162,36 @@ public class AccountActivity extends AppCompatActivity {
         }
     }
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (action.equals("bling.service.action.NEW_PHOTOKIT")) {
+                mPhotoKitDialog = Utils.showDialog(AccountActivity.this, R.layout.photo_kit_dialog);
+
+                mPhotoKitDialog.findViewById(R.id.ok).setOnClickListener(v -> {
+                    Utils.dismissDialog(mPhotoKitDialog);
+                });
+            }
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter("bling.service.action.NEW_PHOTOKIT");
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+
+        super.onPause();
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -172,6 +209,14 @@ public class AccountActivity extends AppCompatActivity {
             unbindService(mConnection);
         }
         mBound = false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        Utils.dismissDialog(mPhotoKitDialog);
+        Utils.dismissDialog(mAlertDialog);
+
+        super.onDestroy();
     }
 
     private void initView() {
@@ -195,7 +240,14 @@ public class AccountActivity extends AppCompatActivity {
         });
 
         mChangeColorView.setOnClickListener(v -> {
-            changeColor();
+            if (mBound && mService != null && mService.isDrawing()) {
+                // 드로잉 중일때는 색상 변경 못하도록
+                Toast.makeText(this, "Please change the color after exiting drawing mode", Toast.LENGTH_SHORT).show();
+            } else if (!mBound || mService == null) {
+                Toast.makeText(this, "Please change the color after connecting with the Bling", Toast.LENGTH_SHORT).show();
+            } else {
+                changeColor();
+            }
         });
 
         mRemoveAccountView.setOnClickListener(v -> {
@@ -219,6 +271,8 @@ public class AccountActivity extends AppCompatActivity {
             updateData(setParameters(mUserId, mPassword, editUserNameView.getText().toString(), mColor, mStarId));
 
             Utils.dismissDialog(mAlertDialog);
+
+            Toast.makeText(this, "The username has been changed.", Toast.LENGTH_SHORT).show();
         });
 
         mAlertDialog.findViewById(R.id.cancel).setOnClickListener(v -> {
@@ -365,6 +419,8 @@ public class AccountActivity extends AppCompatActivity {
                 updateData(setParameters(mUserId, editPasswordView.getText().toString(), mName, mColor, mStarId));
 
                 Utils.dismissDialog(mAlertDialog);
+
+                Toast.makeText(this, "The password has been changed.", Toast.LENGTH_SHORT).show();
             } else if (isPasswordConfirmed) {
                 isNextClicked = true;
 
@@ -416,13 +472,18 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.done).setOnClickListener((v -> {
             mColorView.setBackgroundTintList(ColorStateList.valueOf(mCurrentColor));
-            mService.mMemberColor = mCurrentColor;
-            mService.sendLcdDrawing(2, 0, 0, 10);
+            if (mBound && mService != null) {
+                mService.mMemberColor = mCurrentColor;
+                mService.sendLcdDrawing(2, 0, 0, Integer.parseInt(mId),
+                        Color.red(mService.mMemberColor), Color.green(mService.mMemberColor), Color.blue(mService.mMemberColor));
+            }
             Utils.savePreference(getApplicationContext(), "MemberColor", mCurrentColorHex);
 
             updateData(setParameters(mUserId, mPassword, mName, mCurrentColorHex, mStarId));
 
             Utils.dismissDialog(mAlertDialog);
+
+            Toast.makeText(this, "The color has been changed.", Toast.LENGTH_SHORT).show();
         }));
     }
 

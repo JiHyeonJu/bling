@@ -19,4 +19,17 @@
         android:layout_marginHorizontal="6dp"
         android:layout_marginTop="13dp"
         android:text="The photo kit is connected" />
+
+    <Button
+        android:id="@+id/ok"
+        style="@style/font_700"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/main_rect_btn_ripple"
+        android:gravity="center"
+        android:text="Ok"
+        android:textColor="@color/colorPrimary"
+        android:textSize="16dp" />
 </LinearLayout>

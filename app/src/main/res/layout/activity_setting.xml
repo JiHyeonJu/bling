@@ -220,7 +220,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:text="38%"
+                    android:text="Importing data from Bling..."
                     android:textSize="12dp" />
 
                 <TextView
@@ -230,7 +230,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="end"
-                    android:text="1 hour 28 mins"
                     android:textSize="12dp" />
             </LinearLayout>
 
@@ -246,32 +245,7 @@
                 android:thumb="@android:color/transparent" />
 
             <!--나중에 지울부분-->
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <Button
-                    android:id="@+id/action_1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="touch" />
-
-                <TextView
-                    android:id="@+id/touch_status"
-                    style="@style/font_700"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="touch data : " />
-            </LinearLayout>
-
-            <LinearLayout
+            <!--<LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/lightGray"
@@ -290,7 +264,7 @@
                     android:layout_height="60dp"
                     android:layout_weight="1"
                     android:text="clean canvas" />
-            </LinearLayout>
+            </LinearLayout>-->
             <!--나중에 지울부분 여기까지-->
         </LinearLayout>
     </ScrollView>

@@ -31,7 +31,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
         switch (action) {
             case BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED:
                 if (!BluetoothAdapter.getDefaultAdapter().isEnabled() && Utils.isMyServiceRunning(context, BlingService.class)) {
-                    Log.d(TAG, "jjhhh Bluetooth Off : Stop service");
+                    Log.d(TAG, "Bluetooth Off : Stop service");
 
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);

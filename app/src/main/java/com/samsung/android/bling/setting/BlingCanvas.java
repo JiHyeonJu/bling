@@ -113,7 +113,6 @@ public class BlingCanvas extends View {
 
         if (drawingInfo == 0) {
             mPath[member].moveTo(x, y);
-            mPath[member].lineTo(x, y);
         } else if (drawingInfo == 1 || drawingInfo == 2) {
             mPath[member].lineTo(x, y);
         } else if (drawingInfo == 3) {

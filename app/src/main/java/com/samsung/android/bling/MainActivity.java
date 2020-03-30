@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
     private String mStarId = "1";    // 블링 기기로부터 starID 얻어오게끔 수정될 예정
 
     private MqttClient mMqttClient;
+
+    private String mPhotoKitNfc = "-1";
+    private AlertDialog mPhotoKitDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,12 +136,14 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("bling.service.action.BT_CONNECTION_CHANGED");
         intentFilter.addAction("bling.service.action.STAR_CONNECTION_CHANGED");
+        intentFilter.addAction("bling.service.action.NEW_PHOTOKIT");
+        intentFilter.addAction("bling.service.action.NO_PHOTOKIT");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
 
         mqttSubscribe();
 
         setUserName();
-        updateStatusView(Utils.isMyServiceRunning(this, BlingService.class), mMyStatusView);
+        updateStatusView(Utils.isMyServiceRunning(this, BlingService.class) && isPhotoKitConnected(), mMyStatusView);
         setStarStatus();
     }
 
@@ -152,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        Utils.dismissDialog(mPhotoKitDialog);
+
         if (!mIsStar && mMqttClient != null && mMqttClient.isConnected()) {
             try {
                 mMqttClient.disconnect();
@@ -165,6 +173,11 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private boolean isPhotoKitConnected() {
+        mPhotoKitNfc = Utils.getPreference(getApplicationContext(), "nfcInfo");
+        return !mPhotoKitNfc.equals("-1");
+    }
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -175,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 message = intent.getStringExtra("bt_status");
 
                 boolean isConnected = "connect".equals(message);
-                updateStatusView("connect".equals(message), mMyStatusView);
+                updateStatusView(isPhotoKitConnected() && "connect".equals(message), mMyStatusView);
 
                 // 메인의 mqttsubscribe를 내가 끊어질때 한번더 보도록 서비스에서 체크할줄알고 메인에서는 체크안해 온리쥼때만 이어주니까
                 if (isConnected) {
@@ -187,8 +200,23 @@ public class MainActivity extends AppCompatActivity {
                 message = intent.getStringExtra("msg");
 
                 setStarStatus();
+            } else if (action.equals("bling.service.action.NEW_PHOTOKIT")) {
+                mPhotoKitNfc = intent.getStringExtra("nfcInfo");
+
+                updateStatusView(true, mMyStatusView);
+
+                mPhotoKitDialog = Utils.showDialog(MainActivity.this, R.layout.photo_kit_dialog);
+                mPhotoKitDialog.findViewById(R.id.ok).setOnClickListener(v -> {
+                    Utils.dismissDialog(mPhotoKitDialog);
+                });
+                Log.d(TAG, "mPhotoKitNfc: " + mPhotoKitNfc);
+            } else if (action.equals("bling.service.action.NO_PHOTOKIT")) {
+                mPhotoKitNfc = intent.getStringExtra("nfcInfo");
+
+                updateStatusView(false, mMyStatusView);
+
+                Log.d(TAG, "mPhotoKitNfc: " + mPhotoKitNfc);
             }
-            Log.d(TAG, "jjhhh action: " + action + ", message: " + message);
         }
     };
 
@@ -232,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
                             Utils.showNotification(MainActivity.this, false,
                                     1001, "Bling", getString(R.string.star_online_notification_msg));
                         }
-                        Log.d(TAG, "jjhhh Mqtt messageArrived() in MainActivity : " + data);
+                        Log.d(TAG, "Mqtt messageArrived() in MainActivity : " + data);
                     }
 
                     @Override
@@ -333,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
 
                 mStarNameView.setText(data.getStarName());
 
-                Log.d(TAG, "jjhhh setStarStatus() : " + data.getStarStatus());
+                Log.d(TAG, "setStarStatus() : " + data.getStarStatus());
             }
 
             @Override

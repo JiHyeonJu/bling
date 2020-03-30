@@ -12,22 +12,12 @@ public class MyApplication extends Application {
 
     private static Intent sServiceIntent;
 
-    private static String sPhotoKitNfc = "-1";
-
     @Override
     public void onCreate() {
         super.onCreate();
 
         Log.d(TAG, "jjh Application start");
         sServiceIntent = new Intent(getApplicationContext(), BlingService.class);
-    }
-
-    public static String getPhotoKitNfc() {
-        return sPhotoKitNfc;
-    }
-
-    public static void setPhotoKitNfc(String nfcInfo) {
-        sPhotoKitNfc = nfcInfo;
     }
 
     public static Intent getServiceIntent() {

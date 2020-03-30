@@ -70,6 +70,8 @@ public class SettingActivity extends Activity {
     private TextView mBatteryPercent;
     private TextView mBatteryTime;
 
+    private AlertDialog mPhotoKitDialog;
+
     // will be removed
     private BlingCanvas mCanvas;
 
@@ -86,6 +88,7 @@ public class SettingActivity extends Activity {
             BTBinder binder = (BTBinder) service;
             mService = binder.getService();
             mBound = true;
+            mService.batteryRequestRepeadly(1);
             setEnableView(true);
         }
 
@@ -109,6 +112,9 @@ public class SettingActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        Utils.dismissDialog(mPhotoKitDialog);
+        Utils.dismissDialog(mPickerDialog);
+
         super.onDestroy();
     }
 
@@ -141,7 +147,9 @@ public class SettingActivity extends Activity {
                 new IntentFilter("bling.service.action.BT_CONNECTION_CHANGED"));*/
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("bling.service.action.BT_CONNECTION_CHANGED");
-        intentFilter.addAction("bling.service.action.STAR_DRAWING");
+        intentFilter.addAction("bling.service.action.Battery");
+        intentFilter.addAction("bling.service.action.NEW_PHOTOKIT");
+        //intentFilter.addAction("bling.service.action.STAR_DRAWING");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
     }
 
@@ -174,13 +182,28 @@ public class SettingActivity extends Activity {
                         setEnableView(false);
                     }
                 }
-            } else if (action.equals("bling.service.action.STAR_DRAWING")) {
+            } else if (action.equals("bling.service.action.Battery")) {
+                if (mBound) {
+                    mBatterySeekBar.setProgress(mService.mBatteryPercent);
+                    mBatteryPercent.setText((mService.mIsBatteryCharging ? "Charging " : "") + mService.mBatteryPercent + "%");
+                    mBatteryTime.setText(getBatteryTime());
+
+                    Log.d(TAG, "Battery Percentage in Setting : " + mService.mBatteryPercent);
+                }
+            } else if (action.equals("bling.service.action.NEW_PHOTOKIT")) {
+                mPhotoKitDialog = Utils.showDialog(SettingActivity.this, R.layout.photo_kit_dialog);
+
+                mPhotoKitDialog.findViewById(R.id.ok).setOnClickListener(v -> {
+                    Utils.dismissDialog(mPhotoKitDialog);
+                });
+            }
+            /*else if (action.equals("bling.service.action.STAR_DRAWING")) {
                 String message = intent.getStringExtra("msg");
 
                 String[] point = message.split("\\|");
                 Log.d(TAG, "Mqtt messageArrived() drawing : " + message);
                 mCanvas.drawStarLine(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]), Integer.parseInt(point[3]));
-            }
+            }*/
         }
     };
 
@@ -310,10 +333,8 @@ public class SettingActivity extends Activity {
         mBatterySeekBar.setOnTouchListener((v, event) -> {
             return true;
         });
-        mBatterySeekBar.setProgress(38);
 
-
-        // [[ todo: will be removed
+        /*// [[ todo: will be removed
         mCanvas = findViewById(R.id.bling_canvas);
         mCanvas.setOnCanvasTouchListener(new BlingCanvas.CanvasTouchListener() {
             @Override
@@ -335,16 +356,24 @@ public class SettingActivity extends Activity {
                 }
                 y /= 2;
 
+                if (action == 2) {
+                    action = 1;
+                } else if (action == 1) {
+                    action = 2;
+                }
+
                 final int xPos = x, yPos = y;
+                final int state = action;
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String data = action + "|" + xPos + "|" + yPos;
+                        String data = state + "|" + xPos + "|" + yPos;
                         if (mIsStar && mBound) {
                             try {
                                 mService.mqttDrawingPublish(data);
                                 // memberIndex는 혹시 몰라서 일단 10으로 해놓음
-                                mService.sendLcdDrawing(action, xPos, yPos, 10);
+                                mService.sendLcdDrawing(state, xPos, yPos, 10);
+                                Log.d(TAG, "drawing now : " + state + "|" + xPos + "|" + yPos + "|" + 10);
                                 Thread.sleep(30);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -355,6 +384,13 @@ public class SettingActivity extends Activity {
                 thread.start();
             }
         });
+
+        findViewById(R.id.clean_canvas).setOnClickListener(v -> {
+            mCanvas.cleanCanvas();
+            if (mIsStar && mBound) {
+                mService.sendCleanLcd();
+            }
+        });*/
 
         /*findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
@@ -374,14 +410,30 @@ public class SettingActivity extends Activity {
             //mService.setOnOffLight(1 or 0);
             return true;
         });*/
-
-        findViewById(R.id.clean_canvas).setOnClickListener(v -> {
-            mCanvas.cleanCanvas();
-            if (mIsStar && mBound) {
-                mService.sendCleanLcd();
-            }
-        });
         // ]] will be removed
+    }
+
+    private String getBatteryTime() {
+        String str;
+
+        int hour = mService.mBatteryTime / 60;
+        int min = mService.mBatteryTime % 60;
+
+        if (hour > 1) {
+            str = hour + " hours";
+        } else if (hour == 1) {
+            str = hour + " hour";
+        } else {
+            str = "";
+        }
+
+        if (min > 1) {
+            str = str + " " + min + " mins";
+        } else if (min <= 1) {
+            str = str + " " + min + " min";
+        }
+
+        return str;
     }
 
     private void setEnableView(boolean enable) {
@@ -407,8 +459,16 @@ public class SettingActivity extends Activity {
                 setColorScrollOnClickListener(i, true);
             }
             mColorHorizontalScrollView.setOnTouchListener(null);
-            mBatterySeekBar.setProgress(38);
-            mBatteryPercent.setText("38%");
+
+            if (mBound) {
+                mBatterySeekBar.setProgress(mService.mBatteryPercent);
+                mBatteryPercent.setText((mService.mIsBatteryCharging ? "Charging " : "") + mService.mBatteryPercent + "%");
+                mBatteryTime.setText(getBatteryTime());
+            } else {
+                mBatterySeekBar.setProgress(0);
+                mBatteryPercent.setText("Importing data from Bling...");
+                mBatteryTime.setText("");
+            }
             mBatteryTime.setVisibility(View.VISIBLE);
         } else {
             // set Alpha
