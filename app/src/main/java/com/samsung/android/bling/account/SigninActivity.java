@@ -208,7 +208,7 @@ public class SigninActivity extends AppCompatActivity {
                         UserInfoVo data = (UserInfoVo) receivedData;
 
                         if (data.isSuccess()) {
-                            onSignInClick(intent, data.getID(), "#000000", false);
+                            onSignInClick(intent, data.getID(), "#FFFFFF", false);
                         } else {
                             Toast.makeText(SigninActivity.this, data.getMsg(), Toast.LENGTH_LONG).show();
                         }

@@ -1,0 +1,6 @@
+R_DEF: Internal format may change without notice
+local
+attr? bar_height
+attr? radius
+styleable BarPicker bar_height
+styleable CircleColorPicker radius

@@ -1,0 +1,5 @@
+cn.cricin.colorpicker
+attr bar_height
+attr radius
+styleable BarPicker bar_height
+styleable CircleColorPicker radius

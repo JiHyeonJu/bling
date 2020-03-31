@@ -140,6 +140,7 @@ public class BlingService extends Service {
                             byte[] tx_data = new byte[4];
                             tx_data[0] = (byte) 0xCC;
 
+                            // 이 부분 수정되어야함
                             int color = mMemberColor;
                             tx_data[1] = (byte) (Color.red(color) & 0xFF);
                             tx_data[2] = (byte) (Color.green(color) & 0xFF);
@@ -163,6 +164,9 @@ public class BlingService extends Service {
                         if (mIsStar && isPhotoKitConnected()) {
                             if (data[1] == 1) {
                                 // 드로잉 모드 시작
+                                sendLcdDrawing(2, 0, 0, Integer.parseInt(mMemberId),
+                                        Color.red(mMemberColor), Color.green(mMemberColor), Color.blue(mMemberColor));
+
                                 mIsDrawing = true;
                                 mqttDrawingModePublish("1");
                             } else if (data[1] == 0) {
@@ -224,9 +228,10 @@ public class BlingService extends Service {
                                 setPhotoKitNfc(str);
                             }
                         } else {
-                            if (mIsStar && isPhotoKitConnected()) {
-                                updateStarStatus(mMemberId, "off");
-
+                            if (isPhotoKitConnected()) {
+                                if (mIsStar) {
+                                    updateStarStatus(mMemberId, "off");
+                                }
                                 Intent newIntent = new Intent("bling.service.action.NO_PHOTOKIT");
                                 newIntent.putExtra("nfcInfo", "-1");
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
@@ -265,7 +270,7 @@ public class BlingService extends Service {
             try {
                 batteryRequst();
                 Thread.sleep(1000);
-                batteryRequestRepeadly(1);
+                /*batteryRequestRepeadly(1);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -298,7 +303,9 @@ public class BlingService extends Service {
         mMemberId = Utils.getPreference(getApplicationContext(), "ID");
         mPhotoKitNfc = Utils.getPreference(getApplicationContext(), "nfcInfo");
 
-        mMemberColor = Color.parseColor(Utils.getPreference(getApplicationContext(), "MemberColor"));
+        //Log.d("jjh", Utils.getPreference(getApplicationContext(), "MemberColor") + "");
+        String color = Utils.getPreference(getApplicationContext(), "MemberColor");
+        mMemberColor = Color.parseColor(color);
         mCurrentColor = Utils.getCurrentColor(getApplicationContext());
         mBrightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
         Log.d(TAG, "isStar? " + mIsStar + ", mMemberId :" + mMemberId + ", mMemberColor(hex) :" + Utils.getHexCode(mMemberColor) +
@@ -341,13 +348,19 @@ public class BlingService extends Service {
         Log.d(TAG, "onDestroy()");
         if (mMqttClient != null && mMqttClient.isConnected()) {
             try {
-                mMqttClient.unsubscribe("/bling/star/" + mStarId + "/conn");
+                if (mIsStar) {
+                    String topic = "/bling/star/" + mStarId + "/conn";
+                    mMqttClient.unsubscribe(topic);
+                } else {
+                    String[] topics = {"/bling/star/" + mStarId + "/conn", "/bling/star/" + mStarId + "/msg/touch",
+                            "/bling/star/" + mStarId + "/msg/drawing", "/bling/star/" + mStarId + "/msg/drawingmode"};
+                    mMqttClient.unsubscribe(topics);
+                }
                 mMqttClient.disconnect();
                 mMqttClient = null;
             } catch (Exception e) {
                 Log.d(TAG, "Error while mqtt disconnecting");
                 e.printStackTrace();
-
             }
         }
 
@@ -431,6 +444,29 @@ public class BlingService extends Service {
         writeData(tx_data);
     }
 
+    public void sendEachColorToLedAll(int[] ledrgb) // 27 개 배열 rgb(3개) * led9개
+    {
+        byte[] tx_data = new byte[32];
+
+        tx_data[0] = 0x22;
+        for (int i = 0; i < 27; i++) {
+            tx_data[1 + i] = (byte) ledrgb[i];
+        }
+        writeData(tx_data);
+    }
+
+    public void sendEachColorToLedAll(int ledindex, int r, int g, int b) {
+        byte[] tx_data = new byte[8];
+
+        tx_data[0] = 0x21;
+        tx_data[1] = (byte) (ledindex & 0xFF);
+        tx_data[2] = (byte) (r & 0xFF);
+        tx_data[3] = (byte) (g & 0xFF);
+        tx_data[4] = (byte) (b & 0xFF);
+
+        writeData(tx_data);
+    }
+
     public void constantSet(int color) {
         byte[] tx_data = new byte[4];
         tx_data[0] = (byte) 0xCA;
@@ -468,7 +504,7 @@ public class BlingService extends Service {
 
         writeData(tx_data);
 
-        Log.d(TAG, "sendLcdDrawing " + x + "," + y + "," + memberIndex);
+        Log.d(TAG, "sendLcdDrawing " + state + "," + x + "," + y + "," + memberIndex + "," + r + "," + g + "," + b);
     }
 
     public void sendCleanLcd() {
@@ -527,7 +563,7 @@ public class BlingService extends Service {
     MqttCallback mCallback = new MqttCallback() {
         @Override
         public void connectionLost(Throwable cause) {
-            mqttConnect();
+            //mqttConnect();
             Log.d(TAG, "connectionLost() Mqtt ReConnect");
             cause.printStackTrace();
 
@@ -624,8 +660,8 @@ public class BlingService extends Service {
             try {
                 mMqttClient = new MqttClient("tcp://ec2-52-79-216-28.ap-northeast-2.compute.amazonaws.com:1883", MqttClient.generateClientId(), null);
                 MqttConnectOptions options = new MqttConnectOptions();
-                options.setAutomaticReconnect(true);
-                options.setCleanSession(true);
+                /*options.setAutomaticReconnect(true);
+                options.setCleanSession(true);*/
                 mMqttClient.connect(options);
                 mMqttClient.setCallback(mCallback);
             } catch (Exception e) {

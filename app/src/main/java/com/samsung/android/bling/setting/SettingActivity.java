@@ -132,6 +132,8 @@ public class SettingActivity extends Activity {
     protected void onStop() {
         super.onStop();
         if (mBound && Utils.isMyServiceRunning(this, BlingService.class)) {
+            mService.batteryRequestRepeadly(0);
+
             unbindService(mConnection);
         }
         mBound = false;

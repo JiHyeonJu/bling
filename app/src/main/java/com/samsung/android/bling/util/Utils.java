@@ -159,6 +159,10 @@ public class Utils {
         SharedPreferences pref = context.getSharedPreferences("blingData", Activity.MODE_PRIVATE);
         String str = pref.getString(tag, "-1");
 
+        if (str.equals("-1") && tag.equals("MemberColor")) {
+            str = "#FFFFFF";
+        }
+
         return str;
     }
 

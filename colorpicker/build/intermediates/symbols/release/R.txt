@@ -1,0 +1,6 @@
+int attr bar_height 0x7f040001
+int attr radius 0x7f040002
+int[] styleable BarPicker { 0x7f040001 }
+int styleable BarPicker_bar_height 0
+int[] styleable CircleColorPicker { 0x7f040002 }
+int styleable CircleColorPicker_radius 0

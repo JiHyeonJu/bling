@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.accounts.Account;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -496,7 +495,7 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.yes).setOnClickListener(v -> {
             Utils.savePreference(getApplicationContext(), "ID", FIRST_LOGIN);
-            Utils.savePreference(getApplicationContext(), "MemberColor", FIRST_LOGIN);
+            Utils.savePreference(getApplicationContext(), "MemberColor", "#FFFFFF");
 
             Utils.dismissDialog(mAlertDialog);
 
@@ -520,7 +519,7 @@ public class AccountActivity extends AppCompatActivity {
 
         mAlertDialog.findViewById(R.id.yes).setOnClickListener(v -> {
             Utils.savePreference(getApplicationContext(), "ID", FIRST_LOGIN);
-            Utils.savePreference(getApplicationContext(), "MemberColor", FIRST_LOGIN);
+            Utils.savePreference(getApplicationContext(), "MemberColor", "#FFFFFF");
 
             Utils.dismissDialog(mAlertDialog);
 

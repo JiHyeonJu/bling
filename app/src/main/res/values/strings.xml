@@ -46,9 +46,9 @@
 
     <string name="service_notification_title">The Bling is connected</string>
     <string name="service_notification_msg_star">Fans are cheering you on.</string>
-    <string name="service_notification_msg_star_no_photokit">Put the photo kit into the Bling to connect with the fans</string>
+    <string name="service_notification_msg_star_no_photokit">The Bling is connected to your phone.\nPut the photo kit into the Bling to connect with the fans</string>
     <string name="service_notification_msg_fans">The Bling is currently waiting for the star.</string>
-    <string name="service_notification_msg_fans_no_photokit">Put the photo kit into the Bling to receive the star’s signal</string>
+    <string name="service_notification_msg_fans_no_photokit">The Bling is connected to your phone.\nPut the photo kit into the Bling to receive the star’s signal</string>
     <string name="star_online_notification_msg">The star is online.</string>
     <string name="login_error_toast">The ID or password is incorrect. Please try again.</string>
     <string name="setting_disconnected_toast">The Bling device is not connected</string>
