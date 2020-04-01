@@ -64,8 +64,8 @@ public class SigninActivity extends AppCompatActivity {
                 startForegroundService(new Intent(getApplicationContext(), BlingService.class));
             }
 
-            intent.putExtra("ID", id);
-            intent.putExtra("isStar", isStar);
+            /*intent.putExtra("ID", id);
+            intent.putExtra("isStar", isStar);*/
             startActivity(intent);
             finish();
         }
@@ -255,8 +255,8 @@ public class SigninActivity extends AppCompatActivity {
         Utils.savePreference(getApplicationContext(), "MemberColor", color);
         //Log.d(TAG, id);
 
-        intent.putExtra("ID", id);
-        intent.putExtra("isStar", isStar);
+        /*intent.putExtra("ID", id);
+        intent.putExtra("isStar", isStar);*/
         startActivity(intent);
         finish();
 

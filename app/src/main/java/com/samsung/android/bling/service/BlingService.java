@@ -42,7 +42,7 @@ public class BlingService extends Service {
 
     private MqttClient mMqttClient;
 
-    IBinder mBinder = new BTBinder();
+    private IBinder mBinder = new BTBinder();
 
     private RetroClient retroClient;
 
@@ -61,6 +61,8 @@ public class BlingService extends Service {
     public boolean mIsBatteryCharging = false;
 
     private String mPhotoKitNfc = "-1";
+
+    private NotificationCompat.Builder mNotificationBuilder;
 
     public class BTBinder extends Binder {
         public BlingService getService() { // 서비스 객체를 리턴
@@ -226,6 +228,14 @@ public class BlingService extends Service {
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
 
                                 setPhotoKitNfc(str);
+
+                                // 포토키트가 새로 꼽혔을때 문구 교체
+                                /*String[] notificationText = setServiceNotification();
+                                if (mNotificationBuilder != null) {
+                                    mNotificationBuilder.setContentTitle(notificationText[0]);
+                                    mNotificationBuilder.setContentText(notificationText[1]);
+                                    startForeground(1002, mNotificationBuilder.build());
+                                }*/
                             }
                         } else {
                             if (isPhotoKitConnected()) {
@@ -237,6 +247,14 @@ public class BlingService extends Service {
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
 
                                 setPhotoKitNfc("-1");
+
+                                // 포토키트가 빠졌을때 문구 교체
+                                /*String[] notificationText = setServiceNotification();
+                                if (mNotificationBuilder != null) {
+                                    mNotificationBuilder.setContentTitle(notificationText[0]);
+                                    mNotificationBuilder.setContentText(notificationText[1]);
+                                    startForeground(1002, mNotificationBuilder.build());
+                                }*/
                             }
 
                             Log.d(TAG, "nfc not detected");
@@ -303,7 +321,6 @@ public class BlingService extends Service {
         mMemberId = Utils.getPreference(getApplicationContext(), "ID");
         mPhotoKitNfc = Utils.getPreference(getApplicationContext(), "nfcInfo");
 
-        //Log.d("jjh", Utils.getPreference(getApplicationContext(), "MemberColor") + "");
         String color = Utils.getPreference(getApplicationContext(), "MemberColor");
         mMemberColor = Color.parseColor(color);
         mCurrentColor = Utils.getCurrentColor(getApplicationContext());
@@ -315,27 +332,10 @@ public class BlingService extends Service {
 
         mTargetdevice = BluetoothUtils.getTargetDevice();
 
-        String msg, title;
-        if (mIsStar) {
-            if (isPhotoKitConnected()) {
-                title = getString(R.string.service_notification_title);
-                msg = getString(R.string.service_notification_msg_star);
-            } else {
-                title = getString(R.string.app_name);
-                msg = getString(R.string.service_notification_msg_star_no_photokit);
-            }
-        } else {
-            if (isPhotoKitConnected()) {
-                title = getString(R.string.service_notification_title);
-                msg = getString(R.string.service_notification_msg_fans);
-            } else {
-                title = getString(R.string.app_name);
-                msg = getString(R.string.service_notification_msg_fans_no_photokit);
-            }
-        }
-        NotificationCompat.Builder notificationBuilder = Utils.showNotification(this,
-                true, 1002, title, msg);
-        startForeground(1002, notificationBuilder.build());
+        String[] notificationText = setServiceNotification();
+        mNotificationBuilder = Utils.showNotification(this,
+                true, 1002, notificationText[0], notificationText[1]);
+        startForeground(1002, mNotificationBuilder.build());
 
         /*IntentFilter filter = new IntentFilter();
         filter.addAction("android.os.action.POWER_SAVE_MODE_CHANGED");
@@ -375,6 +375,8 @@ public class BlingService extends Service {
             mBluetoothGatt.close();
             mBluetoothGatt = null;
         }
+
+        mNotificationBuilder = null;
 
         //unregisterReceiver(powerSaverChangeReceiver);
         super.onDestroy();
@@ -422,6 +424,34 @@ public class BlingService extends Service {
                 Log.d(TAG, "setStatusView() jjh onFailure : " + errorData);
             }
         });
+    }
+
+    private String[] setServiceNotification() {
+        String[] notificationText = new String[2];
+
+        if (mIsStar) {
+            /*if (isPhotoKitConnected()) {
+                notificationText[0] = getString(R.string.service_notification_title);
+                notificationText[1] = getString(R.string.service_notification_msg_star);
+            } else {
+                notificationText[0] = getString(R.string.app_name);
+                notificationText[1] = getString(R.string.service_notification_msg_star_no_photokit);
+            }*/
+            notificationText[0] = getString(R.string.service_notification_title);
+            notificationText[1] = getString(R.string.service_notification_msg_star);
+        } else {
+            /*if (isPhotoKitConnected()) {
+                notificationText[0] = getString(R.string.service_notification_title);
+                notificationText[1] = getString(R.string.service_notification_msg_fans);
+            } else {
+                notificationText[0] = getString(R.string.app_name);
+                notificationText[1] = getString(R.string.service_notification_msg_fans_no_photokit);
+            }*/
+            notificationText[0] = getString(R.string.service_notification_title);
+            notificationText[1] = getString(R.string.service_notification_msg_fans);
+        }
+
+        return notificationText;
     }
 
     private void writeData(byte[] data) {

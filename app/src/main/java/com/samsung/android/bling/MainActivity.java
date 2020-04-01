@@ -69,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mMemberId = getIntent().getStringExtra("ID");
-        mIsStar = getIntent().getBooleanExtra("isStar", false);
+        mMemberId = Utils.getPreference(getApplicationContext(), "ID");
+        mIsStar = Utils.getIsStar(getApplicationContext());
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
 
@@ -171,6 +171,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
     }
 
     private boolean isPhotoKitConnected() {

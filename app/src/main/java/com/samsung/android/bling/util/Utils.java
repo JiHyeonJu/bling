@@ -30,6 +30,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.samsung.android.bling.MainActivity;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.account.SigninActivity;
 
@@ -53,12 +54,12 @@ public class Utils {
     private static final String TAG = "Bling/Utils";
 
     public static NotificationCompat.Builder showNotification(Context context, boolean isService, int notificationId, String title, String messageBody) {
-        Intent intent = new Intent(context, SigninActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
-        String channelId = "default_channel";
+        String channelId = "Bling_Channel";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context, channelId)

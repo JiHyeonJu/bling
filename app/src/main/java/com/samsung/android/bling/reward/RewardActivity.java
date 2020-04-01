@@ -90,6 +90,33 @@ public class RewardActivity extends Activity {
             }
         });
 
+        setPhotoKit();
+
+        getUserPhotoKitList();
+    }
+
+    private void initView() {
+        mRecyclerView = findViewById(R.id.photo_kit_list);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setNestedScrollingEnabled(true);
+
+        mAdapter = new PhotoKitAdapter(this);
+        mRecyclerView.setAdapter(mAdapter);
+
+        RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator) {
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+
+        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
+
+        findViewById(R.id.cheering_chart_btn).setOnClickListener(v -> {
+            startActivity(new Intent(RewardActivity.this, ChartActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        });
+    }
+
+    private void getUserPhotoKitList() {
         retroClient.getUserPhotoKitList(mId, new RetroCallback() {
             @Override
             public void onError(Throwable t) {
@@ -113,29 +140,6 @@ public class RewardActivity extends Activity {
             public void onFailure(int code, Object errorData) {
                 Log.d(TAG, "getData() getUserPhotoKitList onFailure : " + code);
             }
-        });
-
-        setPhotoKit();
-    }
-
-    private void initView() {
-        mRecyclerView = findViewById(R.id.photo_kit_list);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setNestedScrollingEnabled(true);
-
-        mAdapter = new PhotoKitAdapter(this);
-        mRecyclerView.setAdapter(mAdapter);
-
-        RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
-
-        findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
-
-        findViewById(R.id.cheering_chart_btn).setOnClickListener(v -> {
-            startActivity(new Intent(RewardActivity.this, ChartActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
         });
     }
 
