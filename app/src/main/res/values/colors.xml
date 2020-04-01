@@ -22,4 +22,7 @@
     <color name="seekbarBgColor">@color/lightGray</color>
     <color name="pickerDialogLineColor">@color/lightGray</color>
     <color name="pickerDialogBTLineColor">#E6E6E6</color>
+
+    <color name="new_badge_new">@color/colorPrimary</color>
+    <color name="new_badge_old">#E3E3E3</color>
 </resources>

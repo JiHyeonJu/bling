@@ -47,32 +47,32 @@ public class DrawingItemViewHolder extends HistoryViewHolder {
             case 7:
                 time = "11:15";
                 members = "Jungkook";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_jungkook);
                 break;
             case 8:
                 time = "10:32";
                 members = "V, Jungkook";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_vjungkook);
                 break;
             case 11:
                 time = "1:48";
-                members = "V, Jimin";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                members = "Jimin, V";
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_jiminv);
                 break;
             case 12:
                 time = "1:20";
                 members = "V";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_v);
                 break;
             case 15:
                 time = "13:50";
                 members = "RM, Jin";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin2);
                 break;
             case 19:
                 time = "1:20";
                 members = "Suga";
-                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_rmjin);
+                drawable = mContext.getDrawable(R.drawable.bling_history_drawing_suga);
                 break;
             default:
                 time = "";

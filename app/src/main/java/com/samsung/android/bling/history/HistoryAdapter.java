@@ -48,6 +48,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
         holder.setText(position);
         holder.setDivider(position == 5 || position == 8 || position == 12 || position == 15 || position == 17 || position == 19,
                 position == 19);
+        holder.setNewBadge(position == 1 || position == 2);
+        holder.setVerticalLine(position == 1 || position == 2 || position == 3 || position == 4 || position == 7 || position == 11);
     }
 
     @Override
