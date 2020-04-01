@@ -501,7 +501,7 @@ public class AccountActivity extends AppCompatActivity {
 
             if (Utils.isMyServiceRunning(this, BlingService.class)) {
                 Log.d(TAG, "stop service");
-                stopService(MyApplication.getServiceIntent());
+                stopService(new Intent(getApplicationContext(), BlingService.class));
             }
             startActivity(new Intent(this, SigninActivity.class));
             ActivityCompat.finishAffinity(this);
@@ -525,7 +525,7 @@ public class AccountActivity extends AppCompatActivity {
 
             if (Utils.isMyServiceRunning(this, BlingService.class)) {
                 Log.d(TAG, "stop service");
-                stopService(MyApplication.getServiceIntent());
+                stopService(new Intent(getApplicationContext(), BlingService.class));
             }
             startActivity(new Intent(this, SigninActivity.class));
             ActivityCompat.finishAffinity(this);

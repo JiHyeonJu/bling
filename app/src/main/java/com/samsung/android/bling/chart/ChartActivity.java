@@ -170,6 +170,17 @@ public class ChartActivity extends AppCompatActivity {
         }
     }
 
+    private void setChartSeekBar() {
+        int[] values = {94, 44, 22, 11, 7};
+
+        LinearLayout layout = findViewById(R.id.chart_layout);
+
+        for (int i = 0; i < 5; i++) {
+            SeekBar bar = layout.getChildAt(i).findViewById(R.id.chart_item_bar);
+            bar.setProgress(values[i]);
+        }
+    }
+
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -198,6 +209,8 @@ public class ChartActivity extends AppCompatActivity {
 
         IntentFilter intentFilter = new IntentFilter("bling.service.action.NEW_PHOTOKIT");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
+
+        setChartSeekBar();
     }
 
     @Override

@@ -36,7 +36,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    context.stopService(MyApplication.getServiceIntent());
+                    context.stopService(new Intent(context.getApplicationContext(), BlingService.class));
                 }
                 break;
             case BluetoothDevice.ACTION_ACL_CONNECTED:  //블루투스 기기 연결
@@ -49,7 +49,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "connect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    context.startForegroundService(MyApplication.getServiceIntent());
+                    context.startForegroundService(new Intent(context.getApplicationContext(), BlingService.class));
                 }
                 break;
 
@@ -61,7 +61,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                     newIntent.putExtra("bt_status", "disconnect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    context.stopService(MyApplication.getServiceIntent());
+                    context.stopService(new Intent(context.getApplicationContext(), BlingService.class));
                 }
                 break;
         }

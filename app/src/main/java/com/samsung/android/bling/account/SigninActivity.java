@@ -61,7 +61,7 @@ public class SigninActivity extends AppCompatActivity {
             if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
                     && BluetoothUtils.isBlingConnected()) {
                 Log.d(TAG, "start service");
-                startForegroundService(MyApplication.getServiceIntent());
+                startForegroundService(new Intent(getApplicationContext(), BlingService.class));
             }
 
             intent.putExtra("ID", id);
@@ -248,7 +248,7 @@ public class SigninActivity extends AppCompatActivity {
         if (!Utils.isMyServiceRunning(SigninActivity.this, BlingService.class)
                 && BluetoothUtils.isBlingConnected()) {
             Log.d(TAG, "start service");
-            startForegroundService(MyApplication.getServiceIntent());
+            startForegroundService(new Intent(getApplicationContext(), BlingService.class));
         }
 
         Utils.savePreference(getApplicationContext(), "ID", id);

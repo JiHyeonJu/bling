@@ -135,6 +135,7 @@ public class SettingActivity extends Activity {
             mService.batteryRequestRepeadly(0);
 
             unbindService(mConnection);
+            mService = null;
         }
         mBound = false;
     }
@@ -180,12 +181,14 @@ public class SettingActivity extends Activity {
                     if (mBound && Utils.isMyServiceRunning(SettingActivity.this, BlingService.class)) {
                         Log.d(TAG, "disconnect");
                         unbindService(mConnection);
-                        mBound = false;
+                        mService = null;
+
                         setEnableView(false);
                     }
+                    mBound = false;
                 }
             } else if (action.equals("bling.service.action.Battery")) {
-                if (mBound) {
+                if (mBound && mService != null) {
                     mBatterySeekBar.setProgress(mService.mBatteryPercent);
                     mBatteryPercent.setText((mService.mIsBatteryCharging ? "Charging " : "") + mService.mBatteryPercent + "%");
                     mBatteryTime.setText(getBatteryTime());
@@ -258,6 +261,15 @@ public class SettingActivity extends Activity {
 
                 mGeneralModeBtn.setTextColor(getColor(R.color.white));
                 mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
+
+                if (mBound && mService != null) {
+                    float[] hsv = new float[3];
+                    Color.colorToHSV(mCurrentColor, hsv);
+                    hsv[2] = (float) mBrightness / 100000000;
+
+                    int color = Color.HSVToColor(hsv);
+                    mService.sendColorToLed(color);
+                }
             }
         });
 
@@ -271,6 +283,10 @@ public class SettingActivity extends Activity {
 
                 mCheeringModeBtn.setTextColor(getColor(R.color.white));
                 mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
+
+                if (mBound && mService != null) {
+                    setCheeringLight();
+                }
             }
         });
 
@@ -301,6 +317,18 @@ public class SettingActivity extends Activity {
                 case MotionEvent.ACTION_UP:
                     // Allow ScrollView to intercept touch events.
                     v.getParent().requestDisallowInterceptTouchEvent(false);
+
+                    float[] hsv = new float[3];
+                    Color.colorToHSV(mCurrentColor, hsv);
+                    hsv[2] = (float) mBrightness / 100000000;
+
+                    try {
+                        int color = Color.HSVToColor(hsv);
+                        Thread.sleep(10);
+                        mService.constantSet(color);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
 
@@ -315,20 +343,18 @@ public class SettingActivity extends Activity {
 
             Utils.savePreference(this, "brightness", String.valueOf(mBrightness));
 
-            if (mBound) {
-                float[] hsv = new float[3];
-                Color.colorToHSV(mCurrentColor, hsv);
-                hsv[2] = (float) mBrightness / 100000000;
+            if (mBound && mService != null) {
+                if (mIsCheeringMode) {
+                    setCheeringLight();
+                } else {
+                    float[] hsv = new float[3];
+                    Color.colorToHSV(mCurrentColor, hsv);
+                    hsv[2] = (float) mBrightness / 100000000;
 
-                try {
                     int color = Color.HSVToColor(hsv);
                     mService.sendColorToLed(color);
-                    Thread.sleep(10);
-                    mService.constantSet(color);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
-                Log.d(TAG, "Send mBrightness : " + mBrightness + ",hsv[2] : " + hsv[2]);
+                Log.d(TAG, "Send mBrightness : " + mBrightness);
             }
         });
 
@@ -462,7 +488,7 @@ public class SettingActivity extends Activity {
             }
             mColorHorizontalScrollView.setOnTouchListener(null);
 
-            if (mBound) {
+            if (mBound && mService != null) {
                 mBatterySeekBar.setProgress(mService.mBatteryPercent);
                 mBatteryPercent.setText((mService.mIsBatteryCharging ? "Charging " : "") + mService.mBatteryPercent + "%");
                 mBatteryTime.setText(getBatteryTime());
@@ -524,7 +550,7 @@ public class SettingActivity extends Activity {
             mCurrentColorHex = "#" + Utils.getHexCode(newColor);
 
             float[] hsv = new float[3];
-            if (mBound) {
+            if (mBound && mService != null) {
                 Color.colorToHSV(newColor, hsv);
                 hsv[2] = (float) mBrightness / 100000000;
 
@@ -535,7 +561,7 @@ public class SettingActivity extends Activity {
         });
 
         mPickerDialog.findViewById(R.id.cancel).setOnClickListener((v -> {
-            if (mBound) {
+            if (mBound && mService != null) {
                 float[] hsv = new float[3];
                 Color.colorToHSV(mCurrentColor, hsv);
                 hsv[2] = (float) mBrightness / 100000000;
@@ -547,7 +573,7 @@ public class SettingActivity extends Activity {
         }));
 
         mPickerDialog.findViewById(R.id.done).setOnClickListener((v -> {
-            if (mBound) {
+            if (mBound && mService != null) {
                 if (colorQueue.size() == 6) {
                     colorQueue.remove();
                 }
@@ -630,7 +656,7 @@ public class SettingActivity extends Activity {
             checkboxView.setImageTintList(ColorStateList.valueOf(getColor(R.color.darkCheckbox)));
         }
 
-        if (mBound) {
+        if (mBound && mService != null) {
             float[] hsv = new float[3];
             Color.colorToHSV(mCurrentColor, hsv);
             hsv[2] = (float) mBrightness / 100000000;
@@ -651,5 +677,75 @@ public class SettingActivity extends Activity {
         super.onBackPressed();
 
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    private void setCheeringLight() {
+        int[] color = {Color.parseColor("#0100FF"), Color.parseColor("#D9418C"),
+                Color.parseColor("#8041D9"), Color.rgb(1, 100, 100)/*Color.parseColor("#151924")*/};
+        int[] ledRgb = new int[27];
+
+        for (int i = 0; i < 4; i++) {
+            float[] hsv = new float[3];
+            Color.colorToHSV(color[i], hsv);
+            hsv[2] = (float) mBrightness / 100000000;
+            color[i] = Color.HSVToColor(hsv);
+        }
+
+        /*mService.sendEachColorToLed(0, Color.red(color[0]), Color.green(color[0]), Color.blue(color[0]));
+        mService.sendEachColorToLed(1, Color.red(color[0]), Color.green(color[0]), Color.blue(color[0]));
+        mService.sendEachColorToLed(2, Color.red(color[0]), Color.green(color[0]), Color.blue(color[0]));
+        mService.sendEachColorToLed(3, Color.red(color[0]), Color.green(color[0]), Color.blue(color[0]));
+        mService.sendEachColorToLed(4, Color.red(color[0]), Color.green(color[0]), Color.blue(color[0]));
+        mService.sendEachColorToLed(5, Color.red(color[1]), Color.green(color[1]), Color.blue(color[1]));
+        mService.sendEachColorToLed(6, Color.red(color[1]), Color.green(color[1]), Color.blue(color[1]));
+        mService.sendEachColorToLed(7, Color.red(color[2]), Color.green(color[2]), Color.blue(color[2]));
+        mService.sendEachColorToLed(8, Color.red(color[3]), Color.green(color[3]), Color.blue(color[2]));*/
+
+        // 9번째 LED
+        ledRgb[0] = Color.red(color[3]);
+        ledRgb[1] = Color.red(color[3]);
+        ledRgb[2] = Color.red(color[3]);
+
+        // 8번째 LED
+        ledRgb[3] = Color.red(color[2]);
+        ledRgb[4] = Color.green(color[2]);
+        ledRgb[5] = Color.blue(color[2]);
+
+        // 7번째 LED
+        ledRgb[6] = Color.red(color[1]);
+        ledRgb[7] = Color.green(color[1]);
+        ledRgb[8] = Color.blue(color[1]);
+
+        // 6번째 LED
+        ledRgb[9] = Color.red(color[1]);
+        ledRgb[10] = Color.green(color[1]);
+        ledRgb[11] = Color.blue(color[1]);
+
+        // 5번째 LED
+        ledRgb[12] = Color.red(color[0]);
+        ledRgb[13] = Color.green(color[0]);
+        ledRgb[14] = Color.blue(color[0]);
+
+        // 4번째 LED
+        ledRgb[15] = Color.red(color[0]);
+        ledRgb[16] = Color.green(color[0]);
+        ledRgb[17] = Color.blue(color[0]);
+
+        // 3번째 LED
+        ledRgb[18] = Color.red(color[0]);
+        ledRgb[19] = Color.green(color[0]);
+        ledRgb[20] = Color.blue(color[0]);
+
+        // 2번째 LED
+        ledRgb[21] = Color.red(color[0]);
+        ledRgb[22] = Color.green(color[0]);
+        ledRgb[23] = Color.blue(color[0]);
+
+        // 1번째 LED
+        ledRgb[24] = Color.red(color[0]);
+        ledRgb[25] = Color.green(color[0]);
+        ledRgb[26] = Color.blue(color[0]);
+
+        mService.sendEachColorToLedAll(ledRgb);
     }
 }

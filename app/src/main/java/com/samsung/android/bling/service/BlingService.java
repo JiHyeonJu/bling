@@ -152,7 +152,7 @@ public class BlingService extends Service {
                     case (byte) 0xAA:
                         // 스타가 손을 대면 publish 1, 떼면 publish 0
                         if (mIsStar && !mIsDrawing && isPhotoKitConnected()) {
-                            Log.d(TAG, "touch data : " + data[1] + mIsStar);
+                            //Log.d(TAG, "touch data : " + data[1] + mIsStar);
                             if (1 == data[1]) {
                                 mqttTouchPublish("1|" + mMemberColor);
                             } else {
@@ -455,7 +455,7 @@ public class BlingService extends Service {
         writeData(tx_data);
     }
 
-    public void sendEachColorToLedAll(int ledindex, int r, int g, int b) {
+    public void sendEachColorToLed(int ledindex, int r, int g, int b) {
         byte[] tx_data = new byte[8];
 
         tx_data[0] = 0x21;
@@ -567,9 +567,9 @@ public class BlingService extends Service {
             Log.d(TAG, "connectionLost() Mqtt ReConnect");
             cause.printStackTrace();
 
-            // 커넥션 관련 로그용으로 나중에 지워야함
+            /*// 커넥션 관련 로그용으로 나중에 지워야함
             Utils.showNotification(BlingService.this, false,
-                    2001, "Bling", "connectionLost() Mqtt ReConnect");
+                    2001, "Bling", "connectionLost() Mqtt ReConnect");*/
         }
 
         @Override
@@ -640,9 +640,9 @@ public class BlingService extends Service {
                     }*/
                     sendDrawingMode(Integer.parseInt(message.toString()));
 
-                    // 드로잉 모드 체크용으로 나중에 지워야할것
+                    /*// 드로잉 모드 체크용으로 나중에 지워야할것
                     Utils.showNotification(BlingService.this, false,
-                            2002, "Bling", message.toString());
+                            2002, "Bling", message.toString());*/
 
                     Log.d(TAG, "Mqtt messageArrived() drawingmode : " + message.toString());
                 }
