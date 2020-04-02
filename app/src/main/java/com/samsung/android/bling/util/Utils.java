@@ -162,6 +162,8 @@ public class Utils {
 
         if (str.equals("-1") && tag.equals("MemberColor")) {
             str = "#FFFFFF";
+        } else if (str.equals("-1") && tag.equals("cheeringMode")) {
+            str = "false";
         }
 
         return str;

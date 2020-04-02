@@ -104,10 +104,13 @@ public class SettingActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mIsStar = Utils.getIsStar(getApplicationContext());
+        mIsCheeringMode = Boolean.parseBoolean(Utils.getPreference(getApplicationContext(), "cheeringMode"));
 
         setContentView(R.layout.activity_setting);
 
         initView();
+
+        setViewByCheeringMode();
     }
 
     @Override
@@ -255,6 +258,7 @@ public class SettingActivity extends Activity {
             if (mIsCheeringMode) {
                 mColorPickerLayout.setVisibility(View.VISIBLE);
                 mIsCheeringMode = false;
+                Utils.savePreference(getApplicationContext(), "cheeringMode", "false");
 
                 mCheeringModeBtn.setTextColor(getColor(R.color.textColor));
                 mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
@@ -277,6 +281,7 @@ public class SettingActivity extends Activity {
             if (!mIsCheeringMode) {
                 mColorPickerLayout.setVisibility(View.GONE);
                 mIsCheeringMode = true;
+                Utils.savePreference(getApplicationContext(), "cheeringMode", "true");
 
                 mGeneralModeBtn.setTextColor(getColor(R.color.textColor));
                 mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
@@ -439,6 +444,26 @@ public class SettingActivity extends Activity {
             return true;
         });*/
         // ]] will be removed
+    }
+
+    private void setViewByCheeringMode() {
+        if (mIsCheeringMode) {
+            mColorPickerLayout.setVisibility(View.GONE);
+
+            mGeneralModeBtn.setTextColor(getColor(R.color.textColor));
+            mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
+
+            mCheeringModeBtn.setTextColor(getColor(R.color.white));
+            mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
+        } else {
+            mColorPickerLayout.setVisibility(View.VISIBLE);
+
+            mCheeringModeBtn.setTextColor(getColor(R.color.textColor));
+            mCheeringModeBtn.setBackground(getDrawable(R.drawable.setting_nonselected_lgiht_btn));
+
+            mGeneralModeBtn.setTextColor(getColor(R.color.white));
+            mGeneralModeBtn.setBackground(getDrawable(R.drawable.setting_selected_lgiht_btn));
+        }
     }
 
     private String getBatteryTime() {
