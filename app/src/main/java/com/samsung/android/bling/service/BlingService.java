@@ -230,12 +230,12 @@ public class BlingService extends Service {
                                 setPhotoKitNfc(str);
 
                                 // 포토키트가 새로 꼽혔을때 문구 교체
-                                /*String[] notificationText = setServiceNotification();
+                                String[] notificationText = setServiceNotification();
                                 if (mNotificationBuilder != null) {
                                     mNotificationBuilder.setContentTitle(notificationText[0]);
                                     mNotificationBuilder.setContentText(notificationText[1]);
                                     startForeground(1002, mNotificationBuilder.build());
-                                }*/
+                                }
                             }
                         } else {
                             if (isPhotoKitConnected()) {
@@ -249,12 +249,12 @@ public class BlingService extends Service {
                                 setPhotoKitNfc("-1");
 
                                 // 포토키트가 빠졌을때 문구 교체
-                                /*String[] notificationText = setServiceNotification();
+                                String[] notificationText = setServiceNotification();
                                 if (mNotificationBuilder != null) {
                                     mNotificationBuilder.setContentTitle(notificationText[0]);
                                     mNotificationBuilder.setContentText(notificationText[1]);
                                     startForeground(1002, mNotificationBuilder.build());
-                                }*/
+                                }
                             }
 
                             Log.d(TAG, "nfc not detected");
@@ -430,25 +430,21 @@ public class BlingService extends Service {
         String[] notificationText = new String[2];
 
         if (mIsStar) {
-            /*if (isPhotoKitConnected()) {
+            if (isPhotoKitConnected()) {
                 notificationText[0] = getString(R.string.service_notification_title);
                 notificationText[1] = getString(R.string.service_notification_msg_star);
             } else {
                 notificationText[0] = getString(R.string.app_name);
                 notificationText[1] = getString(R.string.service_notification_msg_star_no_photokit);
-            }*/
-            notificationText[0] = getString(R.string.service_notification_title);
-            notificationText[1] = getString(R.string.service_notification_msg_star);
+            }
         } else {
-            /*if (isPhotoKitConnected()) {
+            if (isPhotoKitConnected()) {
                 notificationText[0] = getString(R.string.service_notification_title);
                 notificationText[1] = getString(R.string.service_notification_msg_fans);
             } else {
                 notificationText[0] = getString(R.string.app_name);
                 notificationText[1] = getString(R.string.service_notification_msg_fans_no_photokit);
-            }*/
-            notificationText[0] = getString(R.string.service_notification_title);
-            notificationText[1] = getString(R.string.service_notification_msg_fans);
+            }
         }
 
         return notificationText;
