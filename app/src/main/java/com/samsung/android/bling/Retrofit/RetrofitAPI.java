@@ -1,6 +1,7 @@
 package com.samsung.android.bling.Retrofit;
 
 import com.samsung.android.bling.data.AlbumVo;
+import com.samsung.android.bling.data.PhotoKitItemVo;
 import com.samsung.android.bling.data.PhotoKitVo;
 import com.samsung.android.bling.data.StarInfoVo;
 import com.samsung.android.bling.data.StarMemberInfoVo;
@@ -49,8 +50,8 @@ public interface RetrofitAPI {
 
 
     // 06. PhotoKit : Photo Kit Controller
-    @GET("photoKit/{ptk_nfc_info}")
-    Call<PhotoKitVo> getPhotoKitDataFromNfc(@Path("ptk_nfc_info") String id);
+    /*@GET("photoKit/{ptk_nfc_info}")
+    Call<PhotoKitVo> getPhotoKitDataFromNfc(@Path("ptk_nfc_info") String id);*/
 
 
     // 08. Login : Login Controller
@@ -66,6 +67,10 @@ public interface RetrofitAPI {
     // 09. PhotoKitReg : Photo Kit Reg Controller
     @GET("photoKitReg/user/{user_id}")
     Call<PhotoKitListVo> getUserPhotoKitList(@Path("user_id") String id);
+
+    @FormUrlEncoded
+    @POST("photoKitRegByNFCTag/{ptk_nfc_info}")
+    Call<PhotoKitVo> registerPhotoKitFromNfc(@FieldMap HashMap<String, Object> parameter, @Path("ptk_nfc_info") String id);
 
 
     // 10. Connection : Conn Controller

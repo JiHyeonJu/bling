@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 
-import com.samsung.android.bling.MyApplication;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
@@ -29,6 +28,7 @@ import com.samsung.android.bling.data.PhotoKitVo;
 import com.samsung.android.bling.util.Utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RewardActivity extends Activity {
     private static final String TAG = "Bling/RewardActivity";
@@ -91,8 +91,6 @@ public class RewardActivity extends Activity {
         });
 
         setPhotoKit();
-
-        getUserPhotoKitList();
     }
 
     private void initView() {
@@ -131,6 +129,8 @@ public class RewardActivity extends Activity {
 
                 mAdapter.setPhotoKitList(mPhotoKitList);
 
+                Log.d(TAG, "getUserPhotoKitList() success");
+
                 /*for (PhotoKitItemVo item : mPhotoKitList) {
                     Log.d(TAG, mPhotoKitList.size() + "," + item.getMemberId() + "," + item.getAlbumCT());
                 }*/
@@ -148,11 +148,16 @@ public class RewardActivity extends Activity {
 
         if (NO_PHOTOKIT.equals(nfcInfo)) {
             mAdapter.setSelectedPhotoKit(-1, -1);
+            getUserPhotoKitList();
         } else {
-            retroClient.getPhotoKitDataFromNfc(nfcInfo, new RetroCallback() {
+            HashMap<String, Object> parameter = new HashMap<>();
+
+            parameter.put("user_id", mId);
+
+            retroClient.registerPhotoKitFromNfc(parameter, nfcInfo, new RetroCallback() {
                 @Override
                 public void onError(Throwable t) {
-                    Log.d(TAG, "getData() getPhotoKitDataFromNfc onError : " + t.toString());
+                    Log.d(TAG, "getData() registerPhotoKitFromNfc onError : " + t.toString());
                     t.printStackTrace();
                 }
 
@@ -162,6 +167,8 @@ public class RewardActivity extends Activity {
 
                     mSelectedPhotoKitAlbum = photoKit.getAlbumCT();
                     mSelectedPhotoKitMember = getIndexFromIdList(photoKit.getMemberIdList(), photoKit.getMemberId());
+
+                    getUserPhotoKitList();
 
                     mAdapter.setSelectedPhotoKit(mSelectedPhotoKitAlbum, mSelectedPhotoKitMember);
                     //((LinearLayoutManager) mRecyclerView.getLayoutManager()).scrollToPositionWithOffset(mSelectedPhotoKitAlbum - 1, 200);
@@ -175,7 +182,7 @@ public class RewardActivity extends Activity {
 
                 @Override
                 public void onFailure(int code, Object errorData) {
-                    Log.d(TAG, "getData() getPhotoKitDataFromNfc onFailure : " + code);
+                    Log.d(TAG, "getData() registerPhotoKitFromNfc onFailure : " + code);
                 }
             });
         }

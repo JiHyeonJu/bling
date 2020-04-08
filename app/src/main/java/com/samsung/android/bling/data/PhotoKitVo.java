@@ -8,11 +8,12 @@ public class PhotoKitVo {
     @SerializedName("data")
     private Data data;
 
-    public String getMsg() {
-        return msg;
+    class Data {
+        @SerializedName("ptk_ID")
+        PhotoKit photoKit;
     }
 
-    class Data {
+    class PhotoKit {
         @SerializedName("member_ID")
         Member member;
 
@@ -34,14 +35,14 @@ public class PhotoKitVo {
     }
 
     public String getMemberId() {
-        return data.member.memberId;
+        return data.photoKit.member.memberId;
     }
 
     public int getAlbumCT() {
-        return data.album.abCT;
+        return data.photoKit.album.abCT;
     }
 
     public String getMemberIdList() {
-        return data.album.memberIdList;
+        return data.photoKit.album.memberIdList;
     }
 }

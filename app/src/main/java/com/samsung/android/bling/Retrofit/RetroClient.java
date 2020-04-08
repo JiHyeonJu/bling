@@ -3,6 +3,7 @@ package com.samsung.android.bling.Retrofit;
 import android.content.Context;
 
 import com.samsung.android.bling.data.AlbumVo;
+import com.samsung.android.bling.data.PhotoKitItemVo;
 import com.samsung.android.bling.data.PhotoKitListVo;
 import com.samsung.android.bling.data.PhotoKitVo;
 import com.samsung.android.bling.data.StarInfoVo;
@@ -225,7 +226,7 @@ public class RetroClient {
 
 
     // [[ 06. PhotoKit : Photo Kit Controller
-    public void getPhotoKitDataFromNfc(String nfcInfo, final RetroCallback callback) {
+    /*public void getPhotoKitDataFromNfc(String nfcInfo, final RetroCallback callback) {
         apiService.getPhotoKitDataFromNfc(nfcInfo).enqueue(new Callback<PhotoKitVo>() {
             @Override
             public void onResponse(Call<PhotoKitVo> call, Response<PhotoKitVo> response) {
@@ -241,7 +242,7 @@ public class RetroClient {
                 callback.onError(t);
             }
         });
-    }
+    }*/
     // ]] 06. PhotoKit : Photo Kit Controller
 
     // [[ 08. Login : Login Controller
@@ -297,6 +298,24 @@ public class RetroClient {
 
             @Override
             public void onFailure(Call<PhotoKitListVo> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    public void registerPhotoKitFromNfc(HashMap<String, Object> parameter, String id, final RetroCallback callback) {
+        apiService.registerPhotoKitFromNfc(parameter, id).enqueue(new Callback<PhotoKitVo>() {
+            @Override
+            public void onResponse(Call<PhotoKitVo> call, Response<PhotoKitVo> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.code(), response.body());
+                } else {
+                    callback.onFailure(response.code(), response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PhotoKitVo> call, Throwable t) {
                 callback.onError(t);
             }
         });
