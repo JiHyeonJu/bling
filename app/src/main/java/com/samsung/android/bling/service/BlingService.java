@@ -335,7 +335,7 @@ public class BlingService extends Service {
 
         String[] notificationText = setServiceNotification();
         mNotificationBuilder = Utils.showNotification(this,
-                true, 1002, notificationText[0], notificationText[1]);
+                true, 1002, "service_channel_id", notificationText[0], notificationText[1]);
         startForeground(1002, mNotificationBuilder.build());
 
         /*IntentFilter filter = new IntentFilter();
@@ -612,7 +612,7 @@ public class BlingService extends Service {
                 // 팬은 스타가 online 했을때 노티를 받는다
                 if (!mIsStar && "on".equals(data)) {
                     Utils.showNotification(BlingService.this, false,
-                            1001, "Bling", getString(R.string.star_online_notification_msg));
+                            1001, "star_status_channel_id", "Bling", getString(R.string.star_online_notification_msg));
                 }
 
                 newIntent = new Intent("bling.service.action.STAR_CONNECTION_CHANGED");

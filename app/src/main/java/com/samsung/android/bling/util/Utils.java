@@ -53,13 +53,12 @@ import okhttp3.OkHttpClient;
 public class Utils {
     private static final String TAG = "Bling/Utils";
 
-    public static NotificationCompat.Builder showNotification(Context context, boolean isService, int notificationId, String title, String messageBody) {
+    public static NotificationCompat.Builder showNotification(Context context, boolean isService, int notificationId, String channelId, String title, String messageBody) {
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
-        String channelId = "Bling_Channel";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context, channelId)
@@ -74,15 +73,6 @@ public class Utils {
 
         NotificationManager notificationManager =
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "My Bling Channel",
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel.setShowBadge(false);
-            notificationManager.createNotificationChannel(channel);
-        }
 
         if (!isService) {
             notificationManager.notify(notificationId /* ID of notification */, notificationBuilder.build());

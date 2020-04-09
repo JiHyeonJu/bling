@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                         // 팬은 스타가 online 했을때 노티를 받는다
                         if (!mIsStar && "on".equals(data)) {
                             Utils.showNotification(MainActivity.this, false,
-                                    1001, "Bling", getString(R.string.star_online_notification_msg));
+                                    1001, "star_status_channel_id", "Bling", getString(R.string.star_online_notification_msg));
                         }
                         Log.d(TAG, "Mqtt messageArrived() in MainActivity : " + data);
                     }
