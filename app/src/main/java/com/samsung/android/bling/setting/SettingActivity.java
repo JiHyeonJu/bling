@@ -43,6 +43,8 @@ import cn.cricin.colorpicker.CircleColorPicker;
 public class SettingActivity extends Activity {
     private static final String TAG = "Bling/SettingActivity";
 
+    public static int BRIGHT_MAX = 1000000;
+
     private TextView mLightModeTitle;
     private Button mGeneralModeBtn;
     private Button mCheeringModeBtn;
@@ -269,7 +271,7 @@ public class SettingActivity extends Activity {
                 if (mBound && mService != null) {
                     float[] hsv = new float[3];
                     Color.colorToHSV(mCurrentColor, hsv);
-                    hsv[2] = (float) mBrightness / 100000000;
+                    hsv[2] = (float) mBrightness / BRIGHT_MAX;
 
                     int color = Color.HSVToColor(hsv);
                     mService.sendColorToLed(color);
@@ -311,140 +313,82 @@ public class SettingActivity extends Activity {
         }
         mBrightnessSeekBar.setProgress(mBrightness);
 
-        mBrightnessSeekBar.setOnTouchListener((v, event) -> {
+        mBatterySeekBar.setOnTouchListener((v, event) -> {
+            return true;
+        });
+    }
+
+    View.OnTouchListener mBrightnessBarTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
             int action = event.getAction();
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     // Disallow ScrollView to intercept touch events.
                     v.getParent().requestDisallowInterceptTouchEvent(true);
+                    mBrightness = mBrightnessSeekBar.getProgress();
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    int progress = (int) (mBrightnessSeekBar.getMaxProgress() * event.getX() / mBrightnessSeekBar.getWidth());
+                    // Ensure progress stays within boundaries
+                    if (progress < 0) {
+                        progress = 0;
+                    }
+                    if (progress > mBrightnessSeekBar.getMaxProgress()) {
+                        progress = mBrightnessSeekBar.getMaxProgress();
+                    }
+
+                    if (mBrightness != progress) {
+                        mBrightness = progress;
+                        Utils.savePreference(getApplicationContext(), "brightness", String.valueOf(mBrightness));
+
+                        Log.d("jjh", "move" + progress);
+                        mBrightnessSeekBar.setProgress(progress);  // Draw progress
+
+                        if (mBound && mService != null) {
+                            if (mIsCheeringMode) {
+                                setCheeringLight();
+                            } else {
+                                float[] hsv = new float[3];
+                                Color.colorToHSV(mCurrentColor, hsv);
+                                hsv[2] = (float) mBrightness / BRIGHT_MAX;
+
+                                int color = Color.HSVToColor(hsv);
+                                mService.sendColorToLed(color);
+                                // 이때는 led 밝기만 바꾸고 touch 리스너에서 constant 컬러를 바꿔줌
+                            }
+                            Log.d(TAG, "Send mBrightness : " + mBrightness);
+                        }
+                    }
                     break;
 
                 case MotionEvent.ACTION_UP:
+                    Log.d("jjh", "up");
                     // Allow ScrollView to intercept touch events.
                     v.getParent().requestDisallowInterceptTouchEvent(false);
 
-                    float[] hsv = new float[3];
-                    Color.colorToHSV(mCurrentColor, hsv);
-                    hsv[2] = (float) mBrightness / 100000000;
+                    if (mBound && mService != null) {
+                        float[] hsv = new float[3];
+                        Color.colorToHSV(mCurrentColor, hsv);
+                        hsv[2] = (float) mBrightness / BRIGHT_MAX;
 
-                    try {
-                        int color = Color.HSVToColor(hsv);
-                        Thread.sleep(10);
-                        mService.constantSet(color);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        try {
+                            int color = Color.HSVToColor(hsv);
+                            Thread.sleep(10);
+                            mService.constantSet(color);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                     break;
             }
 
             // Handle Seekbar touch events.
             v.onTouchEvent(event);
-
             return true;
-        });
-
-        mBrightnessSeekBar.setOnProgressChangedListener(i -> {
-            mBrightness = mBrightnessSeekBar.getProgress();
-
-            Utils.savePreference(this, "brightness", String.valueOf(mBrightness));
-
-            if (mBound && mService != null) {
-                if (mIsCheeringMode) {
-                    setCheeringLight();
-                } else {
-                    float[] hsv = new float[3];
-                    Color.colorToHSV(mCurrentColor, hsv);
-                    hsv[2] = (float) mBrightness / 100000000;
-
-                    int color = Color.HSVToColor(hsv);
-                    mService.sendColorToLed(color);
-                }
-                Log.d(TAG, "Send mBrightness : " + mBrightness);
-            }
-        });
-
-        mBatterySeekBar.setOnTouchListener((v, event) -> {
-            return true;
-        });
-
-        /*// [[ todo: will be removed
-        mCanvas = findViewById(R.id.bling_canvas);
-        mCanvas.setOnCanvasTouchListener(new BlingCanvas.CanvasTouchListener() {
-            @Override
-            public void onUserTouch(int action, int x, int y) {
-                // must be 0 ~ 319 , 0 ~ 239
-                if (x < 0) {
-                    x = 0;
-                }
-                if (x > 640 - 1) {
-                    x = 640 - 1;
-                }
-                x /= 2;
-
-                if (y < 0) {
-                    y = 0;
-                }
-                if (y > 480 - 1) {
-                    y = 480 - 1;
-                }
-                y /= 2;
-
-                if (action == 2) {
-                    action = 1;
-                } else if (action == 1) {
-                    action = 2;
-                }
-
-                final int xPos = x, yPos = y;
-                final int state = action;
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String data = state + "|" + xPos + "|" + yPos;
-                        if (mIsStar && mBound) {
-                            try {
-                                mService.mqttDrawingPublish(data);
-                                // memberIndex는 혹시 몰라서 일단 10으로 해놓음
-                                mService.sendLcdDrawing(state, xPos, yPos, 10);
-                                Log.d(TAG, "drawing now : " + state + "|" + xPos + "|" + yPos + "|" + 10);
-                                Thread.sleep(30);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-                thread.start();
-            }
-        });
-
-        findViewById(R.id.clean_canvas).setOnClickListener(v -> {
-            mCanvas.cleanCanvas();
-            if (mIsStar && mBound) {
-                mService.sendCleanLcd();
-            }
-        });*/
-
-        /*findViewById(R.id.action_1).setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (mBound) {
-                        mService.mqttTouchPublish("1");
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (mBound) {
-                        mService.mqttTouchPublish("0");
-                    }
-                    break;
-            }
-
-            //mService.intensityControl(r, g, b);
-            //mService.setOnOffLight(1 or 0);
-            return true;
-        });*/
-        // ]] will be removed
-    }
+        }
+    };
 
     private void setViewByCheeringMode() {
         if (mIsCheeringMode) {
@@ -490,7 +434,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setEnableView(boolean enable) {
-        if (enable) {
+        if (true) {
             mLightModeTitle.setAlpha(1);
             mGeneralModeBtn.setAlpha(1);
             mCheeringModeBtn.setAlpha(1);
@@ -500,7 +444,7 @@ public class SettingActivity extends Activity {
             mBrightnessTitle.setAlpha(1);
             mBrightnessImageLayout.setAlpha(1);
             mBrightnessSeekBar.setAlpha(1);
-            mBrightnessSeekBar.setEnabled(true);
+            mBrightnessSeekBar.setOnTouchListener(mBrightnessBarTouchListener);
 
             mColorTitle.setAlpha(1);
             mColorScrollLayout.setAlpha(1);
@@ -534,7 +478,9 @@ public class SettingActivity extends Activity {
             mBrightnessTitle.setAlpha(0.4f);
             mBrightnessImageLayout.setAlpha(0.4f);
             mBrightnessSeekBar.setAlpha(0.4f);
-            mBrightnessSeekBar.setEnabled(false);
+            mBrightnessSeekBar.setOnTouchListener((v, event) -> {
+                return true;
+            });
 
             mColorTitle.setAlpha(0.4f);
             mColorScrollLayout.setAlpha(0.4f);
@@ -577,7 +523,7 @@ public class SettingActivity extends Activity {
             float[] hsv = new float[3];
             if (mBound && mService != null) {
                 Color.colorToHSV(newColor, hsv);
-                hsv[2] = (float) mBrightness / 100000000;
+                hsv[2] = (float) mBrightness / BRIGHT_MAX;
 
                 mService.sendColorToLed(Color.HSVToColor(hsv));
             }
@@ -589,7 +535,7 @@ public class SettingActivity extends Activity {
             if (mBound && mService != null) {
                 float[] hsv = new float[3];
                 Color.colorToHSV(mCurrentColor, hsv);
-                hsv[2] = (float) mBrightness / 100000000;
+                hsv[2] = (float) mBrightness / BRIGHT_MAX;
 
                 mService.sendColorToLed(Color.HSVToColor(hsv));
             }
@@ -684,7 +630,7 @@ public class SettingActivity extends Activity {
         if (mBound && mService != null) {
             float[] hsv = new float[3];
             Color.colorToHSV(mCurrentColor, hsv);
-            hsv[2] = (float) mBrightness / 100000000;
+            hsv[2] = (float) mBrightness / BRIGHT_MAX;
 
             try {
                 int color = Color.HSVToColor(hsv);
@@ -712,7 +658,7 @@ public class SettingActivity extends Activity {
         for (int i = 0; i < 4; i++) {
             float[] hsv = new float[3];
             Color.colorToHSV(color[i], hsv);
-            hsv[2] = (float) mBrightness / 100000000;
+            hsv[2] = (float) mBrightness / BRIGHT_MAX;
             color[i] = Color.HSVToColor(hsv);
         }
 

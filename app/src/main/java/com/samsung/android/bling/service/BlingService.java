@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.samsung.android.bling.Retrofit.RetroCallback;
 import com.samsung.android.bling.Retrofit.RetroClient;
+import com.samsung.android.bling.setting.SettingActivity;
 import com.samsung.android.bling.util.BluetoothUtils;
 import com.samsung.android.bling.R;
 import com.samsung.android.bling.util.Utils;
@@ -632,7 +633,7 @@ public class BlingService extends Service {
                     } else {
                         float[] hsv = new float[3];
                         Color.colorToHSV(mCurrentColor, hsv);
-                        hsv[2] = (float) mBrightness / 100000000;
+                        hsv[2] = (float) mBrightness / SettingActivity.BRIGHT_MAX;
 
                         sendColorToLed(Color.HSVToColor(hsv));
                     }

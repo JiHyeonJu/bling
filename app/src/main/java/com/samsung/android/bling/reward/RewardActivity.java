@@ -101,10 +101,11 @@ public class RewardActivity extends Activity {
         mAdapter = new PhotoKitAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
 
-        RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
+        /*RecyclerView.ItemAnimator animator = mRecyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator) {
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        }*/
+        mRecyclerView.getItemAnimator().setChangeDuration(0);
 
         findViewById(R.id.home_as_up).setOnClickListener(v -> new Handler().postDelayed(this::onBackPressed, 250));
 

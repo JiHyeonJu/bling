@@ -1,7 +1,6 @@
 package com.samsung.android.bling.Retrofit;
 
 import com.samsung.android.bling.data.AlbumVo;
-import com.samsung.android.bling.data.PhotoKitItemVo;
 import com.samsung.android.bling.data.PhotoKitVo;
 import com.samsung.android.bling.data.StarInfoVo;
 import com.samsung.android.bling.data.StarMemberInfoVo;
