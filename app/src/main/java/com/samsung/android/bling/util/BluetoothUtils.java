@@ -50,11 +50,10 @@ public class BluetoothUtils {
 
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
-                //if (BT_NAME.equals(device.getName())) {
-                if (BT_NAME.equals(device.getName()) || "AirPods".equals(device.getName())) {
+                if (BT_NAME.equals(device.getName())) {
                     targetDevice = device;
                 }
-                Log.d(TAG, device.getAddress().toString());
+                //Log.d(TAG, device.getAddress().toString());
             }
         }
 

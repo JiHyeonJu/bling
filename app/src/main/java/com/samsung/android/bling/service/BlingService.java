@@ -331,8 +331,6 @@ public class BlingService extends Service {
 
         retroClient = RetroClient.getInstance(this).createBaseApi();
 
-        mTargetdevice = BluetoothUtils.getTargetDevice();
-
         String[] notificationText = setServiceNotification();
         mNotificationBuilder = Utils.showNotification(this,
                 true, 1002, "service_channel_id", notificationText[0], notificationText[1]);
@@ -392,12 +390,23 @@ public class BlingService extends Service {
             updateStarStatus(mMemberId, "on");
         }
 
+         /*블루투스 페어링 직후 바로 연결하여 서비스 실행시 targetDevice가 null이라서 gatt연결이 안됬음
+        ACTION_ACL_CONNECTED 여기서 호출받아 서비스가 시작된 경우 targetDevice를 직접 넘겨받는식으로 수정*/
+        BluetoothDevice device = intent.getParcelableExtra("bt_device");
+        if (device == null) {
+            mTargetdevice = BluetoothUtils.getTargetDevice();
+        } else {
+            mTargetdevice = device;
+        }
+        Log.d("jjh", mTargetdevice == null ? "mTargetdevice null" : "mTargetdevice not null" + mTargetdevice + "");
+
         if (mTargetdevice != null) {
             Log.d(TAG, "attempting connect - " + mTargetdevice.getName() + " , " + mTargetdevice.getAddress());
             mBluetoothGatt = mTargetdevice.connectGatt(getApplicationContext(), false, mGattCallback);
         } else {
-            //Toast.makeText(this, "no target device", Toast.LENGTH_SHORT).show();
             Log.d(TAG, "NO DEV");
+            Utils.showNotification(BlingService.this, false,
+                    2001, "star_status_channel_id", "NO DEV", "targetdevice null");
         }
 
         return START_STICKY;
@@ -467,7 +476,7 @@ public class BlingService extends Service {
         tx_data[5] = (byte) (isOn[3] | isOn[4] << 1 | isOn[5] << 2);
         tx_data[6] = (byte) (isOn[6] | isOn[7] << 1 | isOn[8] << 2);
 
-        Log.d("jjh", "sendColor" + Utils.getHexCode(currentColor));
+        //Log.d("jjh", "sendColor" + Utils.getHexCode(currentColor));
         writeData(tx_data);
     }
 
@@ -502,7 +511,7 @@ public class BlingService extends Service {
         tx_data[2] = (byte) (Color.green(color) & 0xFF);
         tx_data[3] = (byte) (Color.blue(color) & 0xFF);
 
-        Log.d("jjh", "constantSet " + Utils.getHexCode(color) + "...." + tx_data[1] + "," + tx_data[2] + "," + tx_data[3]);
+        //Log.d("jjh", "constantSet " + Utils.getHexCode(color) + "...." + tx_data[1] + "," + tx_data[2] + "," + tx_data[3]);
         writeData(tx_data);
     }
 

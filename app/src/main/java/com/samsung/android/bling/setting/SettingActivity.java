@@ -343,7 +343,7 @@ public class SettingActivity extends Activity {
                         mBrightness = progress;
                         Utils.savePreference(getApplicationContext(), "brightness", String.valueOf(mBrightness));
 
-                        Log.d("jjh", "move" + progress);
+                        //Log.d("jjh", "move" + progress);
                         mBrightnessSeekBar.setProgress(progress);  // Draw progress
 
                         if (mBound && mService != null) {
@@ -364,7 +364,7 @@ public class SettingActivity extends Activity {
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    Log.d("jjh", "up");
+                    //Log.d("jjh", "up");
                     // Allow ScrollView to intercept touch events.
                     v.getParent().requestDisallowInterceptTouchEvent(false);
 
@@ -434,7 +434,7 @@ public class SettingActivity extends Activity {
     }
 
     private void setEnableView(boolean enable) {
-        if (true) {
+        if (enable) {
             mLightModeTitle.setAlpha(1);
             mGeneralModeBtn.setAlpha(1);
             mCheeringModeBtn.setAlpha(1);

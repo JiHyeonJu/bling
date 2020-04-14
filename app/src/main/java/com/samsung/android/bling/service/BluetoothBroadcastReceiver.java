@@ -43,19 +43,20 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
                 String id = Utils.getPreference(context.getApplicationContext(), "ID");
 
                 //if (BT_NAME.equals(device.getName()) && !FIRST_LOGIN.equals(id)) {
-                if ((BT_NAME.equals(device.getName()) || "AirPods".equals(device.getName())) && !FIRST_LOGIN.equals(id)) {
-                    Log.d(TAG, "ACTION_ACL_CONNECTED : Start service");
+                if (BT_NAME.equals(device.getName()) && !FIRST_LOGIN.equals(id)) {
+                    Log.d("jjh", "ACTION_ACL_CONNECTED : Start service");
 
                     newIntent.putExtra("bt_status", "connect");
                     LocalBroadcastManager.getInstance(context).sendBroadcast(newIntent);
 
-                    context.startForegroundService(new Intent(context.getApplicationContext(), BlingService.class));
+                    Intent serviceIntent = new Intent(context.getApplicationContext(), BlingService.class);
+                    serviceIntent.putExtra("bt_device", device);
+                    context.startForegroundService(serviceIntent);
                 }
                 break;
 
             case BluetoothDevice.ACTION_ACL_DISCONNECTED:   //블루투스 기기 끊어짐
-                //if (BT_NAME.equals(device.getName())) {
-                if (BT_NAME.equals(device.getName()) || "AirPods".equals(device.getName())) {
+                if (BT_NAME.equals(device.getName())) {
                     Log.d(TAG, "ACTION_ACL_DISCONNECTED : Stop service");
 
                     newIntent.putExtra("bt_status", "disconnect");

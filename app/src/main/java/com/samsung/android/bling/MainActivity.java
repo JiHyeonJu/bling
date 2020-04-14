@@ -76,9 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
         initView();
 
-        /*if (!Utils.isMyServiceRunning(this, BlingService.class)) {
-            startForegroundService(MyApplication.getServiceIntent());
-        }*/
         // BT
         //BluetoothUtils.checkBluetooth(this);
     }
