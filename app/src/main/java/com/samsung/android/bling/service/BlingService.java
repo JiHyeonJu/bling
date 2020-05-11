@@ -9,7 +9,11 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -30,20 +34,27 @@ import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class BlingService extends Service {
+public class BlingService extends Service implements MqttCallback {
     private static final String TAG = "Bling/BlingService";
+
+    private static final String MQTT_THREAD_NAME = "MqttService[" + TAG + "]"; // Handler Thread ID
+
+    private IBinder mBinder = new BTBinder();
 
     BluetoothGatt mBluetoothGatt = null;
     BluetoothDevice mTargetdevice = null;
 
     private MqttClient mMqttClient;
-
-    private IBinder mBinder = new BTBinder();
+    private MqttConnectOptions mOpts; // Connection Options
+    private boolean mStarted = false;   // Is the Client started?
+    private Handler mConnHandler;     // Seperate Handler thread for networking
+    private ConnectivityManager mConnectivityManager; // To check for connectivity changes
 
     private RetroClient retroClient;
 
@@ -77,6 +88,328 @@ public class BlingService extends Service {
         return mBinder;
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "onCreate()");
+
+        // 설정값 가져오기
+        mIsStar = Utils.getIsStar(getApplicationContext());
+        mMemberId = Utils.getPreference(getApplicationContext(), "ID");
+        mPhotoKitNfc = Utils.getPreference(getApplicationContext(), "nfcInfo");
+        String color = Utils.getPreference(getApplicationContext(), "MemberColor");
+        mMemberColor = Color.parseColor(color);
+        mCurrentColor = Utils.getCurrentColor(getApplicationContext());
+        mBrightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
+        Log.d(TAG, "isStar? " + mIsStar + ", mMemberId :" + mMemberId + ", mMemberColor(hex) :" + Utils.getHexCode(mMemberColor) +
+                ", mCurrentColor(hex) :" + Utils.getHexCode(mCurrentColor) + ", bright :" + mBrightness);
+
+        // 서버와의 연결
+        retroClient = RetroClient.getInstance(this).createBaseApi();
+
+        // mqtt 핸들러 쓰레드
+        HandlerThread thread = new HandlerThread(MQTT_THREAD_NAME);
+        thread.start();
+
+        mConnHandler = new Handler(thread.getLooper());
+
+        mOpts = new MqttConnectOptions();
+        mOpts.setCleanSession(true);
+
+        mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+        // foreground 서비스를 위한 노티 연결
+        String[] notificationText = setServiceNotification();
+        mNotificationBuilder = Utils.showNotification(this,
+                true, 1002, "service_channel_id", notificationText[0], notificationText[1]);
+        startForeground(1002, mNotificationBuilder.build());
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+
+        stop();
+
+        // 이미 포토키트가 빠진 상황이면 off 해줄 필요가 없어
+        if (mIsStar && isPhotoKitConnected()) {
+            updateStarStatus(mMemberId, "off");
+        }
+
+        batteryRequestRepeadly(0);
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.disconnect();
+            mBluetoothGatt.close();
+            mBluetoothGatt = null;
+        }
+
+        mNotificationBuilder = null;
+
+        //unregisterReceiver(powerSaverChangeReceiver);
+        super.onDestroy();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand()");
+
+        start();
+        //mqttSubscribe();
+
+         /*블루투스 페어링 직후 바로 연결하여 서비스 실행시 targetDevice가 null이라서 gatt연결이 안됬음
+        ACTION_ACL_CONNECTED 여기서 호출받아 서비스가 시작된 경우 targetDevice를 직접 넘겨받는식으로 수정*/
+        BluetoothDevice device = intent.getParcelableExtra("bt_device");
+        if (device == null) {
+            mTargetdevice = BluetoothUtils.getTargetDevice();
+        } else {
+            mTargetdevice = device;
+        }
+        //Log.d("jjh", mTargetdevice == null ? "mTargetdevice null" : "mTargetdevice not null" + mTargetdevice + "");
+
+        if (mTargetdevice != null) {
+            Log.d(TAG, "attempting connect - " + mTargetdevice.getName() + " , " + mTargetdevice.getAddress());
+            mBluetoothGatt = mTargetdevice.connectGatt(getApplicationContext(), false, mGattCallback);
+        } else {
+            Log.d(TAG, "NO DEV");
+            Utils.showNotification(BlingService.this, false,
+                    2001, "star_status_channel_id", "NO DEV", "targetdevice null");
+        }
+
+        return START_STICKY;
+    }
+
+    // [[ MQTT 통신 관련
+    private synchronized void start() {
+        if (mStarted) {
+            Log.i(TAG, "Attempt to start while already started");
+            return;
+        }
+
+        /*if (hasScheduledKeepAlives()) {
+            stopKeepAlives();
+        }*/
+
+        mqttConnect();
+
+        //registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    private synchronized void stop() {
+        if (!mStarted) {
+            Log.i(TAG, "Attemtpign to stop connection that isn't running");
+            return;
+        }
+
+        if (mMqttClient != null) {
+            mConnHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mMqttClient.disconnect();
+                    } catch (MqttException ex) {
+                        ex.printStackTrace();
+                    }
+                    mMqttClient = null;
+                    mStarted = false;
+
+                    //stopKeepAlives();
+                }
+            });
+        }
+
+        //unregisterReceiver(mConnectivityReceiver);
+    }
+
+    private boolean isNetworkAvailable() {
+        NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
+
+        return (info == null) ? false : info.isConnected();
+    }
+
+    private void mqttConnect() {
+        if (mMqttClient == null || !mMqttClient.isConnected()) {
+            try {
+                mMqttClient = new MqttClient("tcp://ec2-52-79-216-28.ap-northeast-2.compute.amazonaws.com:1883", MqttClient.generateClientId(), null);
+            } catch (Exception e) {
+                Log.d(TAG, "Error while mqtt connecting");
+                e.printStackTrace();
+            }
+        }
+
+        mConnHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mMqttClient.connect(mOpts);
+                    mqttSubscribe();
+                    mMqttClient.setCallback(BlingService.this);
+                    mStarted = true; // Service is now connected
+
+                    Log.i(TAG, "Successfully connected");
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private synchronized void reconnectIfNecessary() {
+        if (mStarted && mMqttClient == null) {
+            mqttConnect();
+        }
+    }
+
+    @Override
+    public void connectionLost(Throwable cause) {
+        /*Utils.showNotification(BlingService.this, false,
+                2001, "star_status_channel_id", "connectionLost", "connectionLost() Mqtt ReConnect");*/
+
+        mMqttClient = null;
+        Log.d(TAG, "connectionLost");
+
+        if (isNetworkAvailable()) {
+            reconnectIfNecessary();
+        }
+    }
+
+    @Override
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+        Intent newIntent;
+        if (topic.equals("/bling/star/" + mStarId + "/conn")) {
+            // 연결관련 메시징을 받을때
+            JsonParser jsonParser = new JsonParser();
+            JsonObject jsonObject = (JsonObject) jsonParser.parse(message.toString());
+
+            String data = jsonObject.get("msg_data").getAsString();
+
+            // 팬은 스타가 online 했을때 노티를 받는다
+            if (!mIsStar && "on".equals(data)) {
+                Utils.showNotification(BlingService.this, false,
+                        1001, "star_status_channel_id", "Bling", getString(R.string.star_online_notification_msg));
+            }
+
+            newIntent = new Intent("bling.service.action.STAR_CONNECTION_CHANGED");
+            newIntent.putExtra("msg", data);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
+
+            Log.d(TAG, "Mqtt messageArrived() in Service : " + data);
+        } else if (topic.equals("/bling/star/" + mStarId + "/msg/touch")) {
+            // 터치 관련 메시지를 받을때
+            // 팬이고 포토키트가 껴져있을때만 작동
+            if (!mIsStar && isPhotoKitConnected()) {
+                // 팬만 받아서 동작함
+                String[] data = message.toString().split("\\|");
+
+                if ("1".equals(data[0])) {
+                    int color = Integer.parseInt(data[1]);
+                    sendColorToLed(color);
+                } else {
+                    float[] hsv = new float[3];
+                    Color.colorToHSV(mCurrentColor, hsv);
+                    hsv[2] = (float) mBrightness / SettingActivity.BRIGHT_MAX;
+
+                    sendColorToLed(Color.HSVToColor(hsv));
+                }
+                Log.d(TAG, "Mqtt messageArrived() touch : " + message.toString());
+            }
+        } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawing")) {
+            // 드로잉 관련 메시지를 받을때
+            // 팬이고 포토키트가 껴져있을때만 작동
+            if (!mIsStar && isPhotoKitConnected()) {
+                String[] data = message.toString().split("\\|");
+
+                int color = Integer.parseInt(data[4]);
+                sendLcdDrawing(Integer.parseInt(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]),
+                        Color.red(color), Color.green(color), Color.blue(color));
+
+                Log.d(TAG, "Mqtt messageArrived() drawing : " + message.toString());
+            }
+        } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawingmode")) {
+            // 드로잉 모드 메시지를 받을때
+            // 팬이고 포토키트가 껴져있을때만 작동
+            if (!mIsStar && isPhotoKitConnected()) {
+                sendDrawingMode(Integer.parseInt(message.toString()));
+
+                /*// 드로잉 모드 체크용으로 나중에 지워야할것
+                Utils.showNotification(BlingService.this, false,
+                        2002, "Bling", message.toString());*/
+
+                Log.d(TAG, "Mqtt messageArrived() drawingmode : " + message.toString());
+            }
+        }
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+
+    }
+
+    public void mqttSubscribe() {
+        Log.d(TAG, "mqttSubscribe");
+
+        try {
+            if (mIsStar) {
+                String topic = "/bling/star/" + mStarId + "/conn";
+                mMqttClient.subscribe(topic, 1);
+                if (isPhotoKitConnected()) {
+                    updateStarStatus(mMemberId, "on");
+                }
+            } else {
+                String[] topics = {"/bling/star/" + mStarId + "/conn", "/bling/star/" + mStarId + "/msg/touch",
+                        "/bling/star/" + mStarId + "/msg/drawing", "/bling/star/" + mStarId + "/msg/drawingmode"};
+                int[] qos = {1, 1, 1, 2};
+                mMqttClient.subscribe(topics, qos);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "mqttSubscribe() : error");
+            e.printStackTrace();
+        }
+    }
+
+    public void mqttTouchPublish(String data) {
+        //mqttConnect();
+
+        try {
+            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/touch", new MqttMessage(data.getBytes()));
+            mMqttClient.publish("/bling/star/" + mStarId + "/msg/touch", data.getBytes(), 2, false);
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/touch : " + data);
+        } catch (Exception e) {
+            Log.d(TAG, "mqttTouchPublish() : error");
+            e.printStackTrace();
+        }
+    }
+
+    public void mqttDrawingModePublish(String data) {
+        //mqttConnect();
+
+        try {
+            //data = data + "|" + mMemberId;
+            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawingmode", new MqttMessage(data.getBytes()));
+            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawingmode", data.getBytes(), 2, false);
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawingmode : " + data);
+        } catch (Exception e) {
+            Log.d(TAG, "mqttDrawingPublish() : error");
+            e.printStackTrace();
+        }
+    }
+
+    public void mqttDrawingPublish(String data) {
+        //mqttConnect();
+
+        try {
+            data = data + "|" + mMemberId;
+            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", new MqttMessage(data.getBytes()));
+            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", data.getBytes(), 2, false);
+            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing : " + data);
+        } catch (Exception e) {
+            Log.d(TAG, "mqttDrawingPublish() : error");
+            e.printStackTrace();
+        }
+    }
+    // ]] MQTT 통신 관련
+
+
+    // [[ 블루투스 통신 관련
     BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -198,17 +531,14 @@ public class BlingService extends Service {
                             mqttDrawingPublish(action + "|" + xPos + "|" + yPos + "|" + mMemberId + "|" + mMemberColor);
 
                             Log.d(TAG, "drawing now : " + action + "|" + xPos + "|" + yPos + "|" + mMemberId + mMemberColor);
-
-                            /*// 세팅 캔버스에 그리기위해 브로드캐스트, 테스트용으로 없어져도 됨
-                            Intent newIntent = new Intent("bling.service.action.STAR_DRAWING");
-                            newIntent.putExtra("msg", action + "|" + xPos + "|" + yPos + "|" + mMemberId);
-                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);*/
                         }
                         break;
                     case (byte) 0xCD:
                         // NFC 태그 새로 읽혔을때
                         int len = data[2];
                         byte[] b = new byte[255];
+
+                        Log.d(TAG, "jjh nfc receive len: " + len + mPhotoKitNfc);
 
                         if (data[1] > 0) // detected
                         {
@@ -296,170 +626,6 @@ public class BlingService extends Service {
         }
     };
 
-
-    /*BroadcastReceiver powerSaverChangeReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            Utils.showNotification(BlingService.this, false,
-                    1004, "Bling", action + isDozing(BlingService.this));
-        }
-    };
-
-    @TargetApi(23)
-    private static boolean isDozing(Context context) {
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        return powerManager.isDeviceIdleMode() &&
-                !powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
-    }*/
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.d(TAG, "onCreate()");
-
-        mIsStar = Utils.getIsStar(getApplicationContext());
-        mMemberId = Utils.getPreference(getApplicationContext(), "ID");
-        mPhotoKitNfc = Utils.getPreference(getApplicationContext(), "nfcInfo");
-
-        String color = Utils.getPreference(getApplicationContext(), "MemberColor");
-        mMemberColor = Color.parseColor(color);
-        mCurrentColor = Utils.getCurrentColor(getApplicationContext());
-        mBrightness = Integer.parseInt(Utils.getPreference(getApplicationContext(), "brightness"));
-        Log.d(TAG, "isStar? " + mIsStar + ", mMemberId :" + mMemberId + ", mMemberColor(hex) :" + Utils.getHexCode(mMemberColor) +
-                ", mCurrentColor(hex) :" + Utils.getHexCode(mCurrentColor) + ", bright :" + mBrightness);
-
-        retroClient = RetroClient.getInstance(this).createBaseApi();
-
-        String[] notificationText = setServiceNotification();
-        mNotificationBuilder = Utils.showNotification(this,
-                true, 1002, "service_channel_id", notificationText[0], notificationText[1]);
-        startForeground(1002, mNotificationBuilder.build());
-
-        /*IntentFilter filter = new IntentFilter();
-        filter.addAction("android.os.action.POWER_SAVE_MODE_CHANGED");
-        //registerReceiver(powerSaverChangeReceiver, filter);
-        Log.d("jjh", "android.os.action.POWER_SAVE_MODE_CHANGED");*/
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d(TAG, "onDestroy()");
-        if (mMqttClient != null && mMqttClient.isConnected()) {
-            try {
-                if (mIsStar) {
-                    String topic = "/bling/star/" + mStarId + "/conn";
-                    mMqttClient.unsubscribe(topic);
-                } else {
-                    String[] topics = {"/bling/star/" + mStarId + "/conn", "/bling/star/" + mStarId + "/msg/touch",
-                            "/bling/star/" + mStarId + "/msg/drawing", "/bling/star/" + mStarId + "/msg/drawingmode"};
-                    mMqttClient.unsubscribe(topics);
-                }
-                mMqttClient.disconnect();
-                mMqttClient = null;
-            } catch (Exception e) {
-                Log.d(TAG, "Error while mqtt disconnecting");
-                e.printStackTrace();
-            }
-        }
-
-        // 이미 포토키트가 빠진 상황이면 off 해줄 필요가 없어
-        if (mIsStar && isPhotoKitConnected()) {
-            updateStarStatus(mMemberId, "off");
-        }
-
-        batteryRequestRepeadly(0);
-        if (mBluetoothGatt != null) {
-            mBluetoothGatt.disconnect();
-            mBluetoothGatt.close();
-            mBluetoothGatt = null;
-        }
-
-        mNotificationBuilder = null;
-
-        //unregisterReceiver(powerSaverChangeReceiver);
-        super.onDestroy();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand()");
-
-        mqttSubscribe();
-        if (mIsStar && isPhotoKitConnected()) {
-            updateStarStatus(mMemberId, "on");
-        }
-
-         /*블루투스 페어링 직후 바로 연결하여 서비스 실행시 targetDevice가 null이라서 gatt연결이 안됬음
-        ACTION_ACL_CONNECTED 여기서 호출받아 서비스가 시작된 경우 targetDevice를 직접 넘겨받는식으로 수정*/
-        BluetoothDevice device = intent.getParcelableExtra("bt_device");
-        if (device == null) {
-            mTargetdevice = BluetoothUtils.getTargetDevice();
-        } else {
-            mTargetdevice = device;
-        }
-        Log.d("jjh", mTargetdevice == null ? "mTargetdevice null" : "mTargetdevice not null" + mTargetdevice + "");
-
-        if (mTargetdevice != null) {
-            Log.d(TAG, "attempting connect - " + mTargetdevice.getName() + " , " + mTargetdevice.getAddress());
-            mBluetoothGatt = mTargetdevice.connectGatt(getApplicationContext(), false, mGattCallback);
-        } else {
-            Log.d(TAG, "NO DEV");
-            Utils.showNotification(BlingService.this, false,
-                    2001, "star_status_channel_id", "NO DEV", "targetdevice null");
-        }
-
-        return START_STICKY;
-    }
-
-    private void updateStarStatus(String Id, String msg) {
-        HashMap<String, Object> parameters = new HashMap<>();
-
-        parameters.put("member_conn_state", msg);
-
-        retroClient.updateStarConnection(Id, parameters, new RetroCallback() {
-            @Override
-            public void onError(Throwable t) {
-                Log.d(TAG, "setStatusView() onError : " + t.toString());
-                t.printStackTrace();
-            }
-
-            @Override
-            public void onSuccess(int code, Object receivedData) {
-                Log.d(TAG, "updateStarStatus() : " + Id + msg);
-            }
-
-            @Override
-            public void onFailure(int code, Object errorData) {
-                Log.d(TAG, "setStatusView() jjh onFailure : " + errorData);
-            }
-        });
-    }
-
-    private String[] setServiceNotification() {
-        String[] notificationText = new String[2];
-
-        if (mIsStar) {
-            if (isPhotoKitConnected()) {
-                notificationText[0] = getString(R.string.service_notification_title);
-                notificationText[1] = getString(R.string.service_notification_msg_star);
-            } else {
-                notificationText[0] = getString(R.string.app_name);
-                notificationText[1] = getString(R.string.service_notification_msg_star_no_photokit);
-            }
-        } else {
-            if (isPhotoKitConnected()) {
-                notificationText[0] = getString(R.string.service_notification_title);
-                notificationText[1] = getString(R.string.service_notification_msg_fans);
-            } else {
-                notificationText[0] = getString(R.string.app_name);
-                notificationText[1] = getString(R.string.service_notification_msg_fans_no_photokit);
-            }
-        }
-
-        return notificationText;
-    }
-
     private void writeData(byte[] data) {
         BluetoothUtils.writeCharacteristic_Data(mBluetoothGatt, data);
     }
@@ -535,7 +701,7 @@ public class BlingService extends Service {
         tx_data[7] = (byte) (r & 0xff);
         tx_data[8] = (byte) (g & 0xff);
         tx_data[9] = (byte) (b & 0xff);
-        tx_data[10] = (byte) (3 & 0xff);
+        tx_data[10] = (byte) (6 & 0xff);
         tx_data[11] = (byte) (memberIndex & 0xff);
 
         writeData(tx_data);
@@ -571,23 +737,6 @@ public class BlingService extends Service {
         Log.d(TAG, "battery request" + request);
     }
 
-    /*public void sendColorToLight2(int currentColor) {
-        byte[] b = new byte[3];
-        b[0] = (byte) (currentColor & 0xFF);
-        b[1] = (byte) ((currentColor >> 8) & 0xFF);
-        b[2] = (byte) ((currentColor >> 16) & 0xFF);
-
-        writeData(b, BluetoothUtils.RX_ANO_UUID);
-    }
-
-    public void sendbrightnessToLed(int value) {
-        byte[] b = new byte[4];
-        b[0] = (byte) (1);
-        b[1] = (byte) (value & 0xFF);
-
-        writeData(b, BluetoothUtils.RX_ANO_UUID);
-    }*/
-
     public void setOnOffLight(int value) {
         byte[] tx_data = new byte[8];
         tx_data[0] = (byte) 0xEA;
@@ -595,177 +744,54 @@ public class BlingService extends Service {
 
         writeData(tx_data);
     }
+    // ]] 블루투스 통신 관련
 
-    MqttCallback mCallback = new MqttCallback() {
-        @Override
-        public void connectionLost(Throwable cause) {
-            //mqttConnect();
-            Log.d(TAG, "connectionLost() Mqtt ReConnect");
-            cause.printStackTrace();
+    private void updateStarStatus(String Id, String msg) {
+        HashMap<String, Object> parameters = new HashMap<>();
 
-            /*// 커넥션 관련 로그용으로 나중에 지워야함
-            Utils.showNotification(BlingService.this, false,
-                    2001, "Bling", "connectionLost() Mqtt ReConnect");*/
-        }
+        parameters.put("member_conn_state", msg);
 
-        @Override
-        public void messageArrived(String topic, MqttMessage message) {
-            Intent newIntent;
-            if (topic.equals("/bling/star/" + mStarId + "/conn")) {
-                // 연결관련 메시징을 받을때
-                JsonParser jsonParser = new JsonParser();
-                JsonObject jsonObject = (JsonObject) jsonParser.parse(message.toString());
-
-                String data = jsonObject.get("msg_data").getAsString();
-
-                // 팬은 스타가 online 했을때 노티를 받는다
-                if (!mIsStar && "on".equals(data)) {
-                    Utils.showNotification(BlingService.this, false,
-                            1001, "star_status_channel_id", "Bling", getString(R.string.star_online_notification_msg));
-                }
-
-                newIntent = new Intent("bling.service.action.STAR_CONNECTION_CHANGED");
-                newIntent.putExtra("msg", data);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);
-
-                Log.d(TAG, "Mqtt messageArrived() in Service : " + data);
-            } else if (topic.equals("/bling/star/" + mStarId + "/msg/touch")) {
-                // 터치 관련 메시지를 받을때
-                // 팬이고 포토키트가 껴져있을때만 작동
-                if (!mIsStar && isPhotoKitConnected()) {
-                    // 팬만 받아서 동작함
-                    String[] data = message.toString().split("\\|");
-
-                    if ("1".equals(data[0])) {
-                        int color = Integer.parseInt(data[1]);
-                        sendColorToLed(color);
-                    } else {
-                        float[] hsv = new float[3];
-                        Color.colorToHSV(mCurrentColor, hsv);
-                        hsv[2] = (float) mBrightness / SettingActivity.BRIGHT_MAX;
-
-                        sendColorToLed(Color.HSVToColor(hsv));
-                    }
-                    Log.d(TAG, "Mqtt messageArrived() touch : " + message.toString());
-                }
-            } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawing")) {
-                // 드로잉 관련 메시지를 받을때
-                // 팬이고 포토키트가 껴져있을때만 작동
-                if (!mIsStar && isPhotoKitConnected()) {
-                    String[] data = message.toString().split("\\|");
-
-                    int color = Integer.parseInt(data[4]);
-                    sendLcdDrawing(Integer.parseInt(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]),
-                            Color.red(color), Color.green(color), Color.blue(color));
-
-                    /*// 세팅 캔버스에 그리기위해 브로드캐스트, 테스트용으로 없어져도 됨
-                    newIntent = new Intent("bling.service.action.STAR_DRAWING");
-                    newIntent.putExtra("msg", message.toString());
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(newIntent);*/
-
-                    Log.d(TAG, "Mqtt messageArrived() drawing : " + message.toString());
-                }
-            } else if (topic.equals("/bling/star/" + mStarId + "/msg/drawingmode")) {
-                // 드로잉 모드 메시지를 받을때
-                // 팬이고 포토키트가 껴져있을때만 작동
-                if (!mIsStar && isPhotoKitConnected()) {
-                    /*int mode = Integer.parseInt(message.toString());
-                    if (mode == 2) {
-                        sendCleanLcd();
-                        Thread.sleep(10);
-                    }*/
-                    sendDrawingMode(Integer.parseInt(message.toString()));
-
-                    /*// 드로잉 모드 체크용으로 나중에 지워야할것
-                    Utils.showNotification(BlingService.this, false,
-                            2002, "Bling", message.toString());*/
-
-                    Log.d(TAG, "Mqtt messageArrived() drawingmode : " + message.toString());
-                }
+        retroClient.updateStarConnection(Id, parameters, new RetroCallback() {
+            @Override
+            public void onError(Throwable t) {
+                Log.d(TAG, "updateStarStatus() onError : " + t.toString());
+                t.printStackTrace();
             }
-        }
 
-        @Override
-        public void deliveryComplete(IMqttDeliveryToken token) {
-
-        }
-    };
-
-    private void mqttConnect() {
-        if (mMqttClient == null || !mMqttClient.isConnected()) {
-            try {
-                mMqttClient = new MqttClient("tcp://ec2-52-79-216-28.ap-northeast-2.compute.amazonaws.com:1883", MqttClient.generateClientId(), null);
-                MqttConnectOptions options = new MqttConnectOptions();
-                /*options.setAutomaticReconnect(true);
-                options.setCleanSession(true);*/
-                mMqttClient.connect(options);
-                mMqttClient.setCallback(mCallback);
-            } catch (Exception e) {
-                Log.d(TAG, "Error while mqtt connecting");
-                e.printStackTrace();
+            @Override
+            public void onSuccess(int code, Object receivedData) {
+                Log.d(TAG, "updateStarStatus() : " + Id + msg);
             }
-        }
+
+            @Override
+            public void onFailure(int code, Object errorData) {
+                Log.d(TAG, "updateStarStatus() jjh onFailure : " + errorData);
+            }
+        });
     }
 
-    public void mqttSubscribe() {
-        Log.d(TAG, "mqttSubscribe");
-        mqttConnect();
+    private String[] setServiceNotification() {
+        String[] notificationText = new String[2];
 
-        try {
-            if (mIsStar) {
-                String topic = "/bling/star/" + mStarId + "/conn";
-                mMqttClient.subscribe(topic, 1);
+        if (mIsStar) {
+            if (isPhotoKitConnected()) {
+                notificationText[0] = getString(R.string.service_notification_title);
+                notificationText[1] = getString(R.string.service_notification_msg_star);
             } else {
-                String[] topics = {"/bling/star/" + mStarId + "/conn", "/bling/star/" + mStarId + "/msg/touch",
-                        "/bling/star/" + mStarId + "/msg/drawing", "/bling/star/" + mStarId + "/msg/drawingmode"};
-                int[] qos = {1, 1, 1, 2};
-                mMqttClient.subscribe(topics, qos);
+                notificationText[0] = getString(R.string.app_name);
+                notificationText[1] = getString(R.string.service_notification_msg_star_no_photokit);
             }
-        } catch (Exception e) {
-            Log.d(TAG, "mqttSubscribe() : error");
-            e.printStackTrace();
+        } else {
+            if (isPhotoKitConnected()) {
+                notificationText[0] = getString(R.string.service_notification_title);
+                notificationText[1] = getString(R.string.service_notification_msg_fans);
+            } else {
+                notificationText[0] = getString(R.string.app_name);
+                notificationText[1] = getString(R.string.service_notification_msg_fans_no_photokit);
+            }
         }
-    }
 
-    public void mqttTouchPublish(String data) {
-        mqttConnect();
-
-        try {
-            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/touch", new MqttMessage(data.getBytes()));
-            mMqttClient.publish("/bling/star/" + mStarId + "/msg/touch", data.getBytes(), 2, false);
-            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/touch : " + data);
-        } catch (Exception e) {
-            Log.d(TAG, "mqttTouchPublish() : error");
-            e.printStackTrace();
-        }
-    }
-
-    public void mqttDrawingModePublish(String data) {
-        mqttConnect();
-
-        try {
-            //data = data + "|" + mMemberId;
-            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawingmode", new MqttMessage(data.getBytes()));
-            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawingmode", data.getBytes(), 2, false);
-            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawingmode : " + data);
-        } catch (Exception e) {
-            Log.d(TAG, "mqttDrawingPublish() : error");
-            e.printStackTrace();
-        }
-    }
-
-    public void mqttDrawingPublish(String data) {
-        mqttConnect();
-
-        try {
-            data = data + "|" + mMemberId;
-            //mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", new MqttMessage(data.getBytes()));
-            mMqttClient.publish("/bling/star/" + mStarId + "/msg/drawing", data.getBytes(), 2, false);
-            Log.d(TAG, "star publish " + "/bling/star/" + mStarId + "/msg/drawing : " + data);
-        } catch (Exception e) {
-            Log.d(TAG, "mqttDrawingPublish() : error");
-            e.printStackTrace();
-        }
+        return notificationText;
     }
 
     public void setPhotoKitNfc(String nfcInfo) {

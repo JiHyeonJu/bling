@@ -157,7 +157,6 @@ public class SettingActivity extends Activity {
         intentFilter.addAction("bling.service.action.BT_CONNECTION_CHANGED");
         intentFilter.addAction("bling.service.action.Battery");
         intentFilter.addAction("bling.service.action.NEW_PHOTOKIT");
-        //intentFilter.addAction("bling.service.action.STAR_DRAWING");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, intentFilter);
     }
 
@@ -207,13 +206,6 @@ public class SettingActivity extends Activity {
                     Utils.dismissDialog(mPhotoKitDialog);
                 });
             }
-            /*else if (action.equals("bling.service.action.STAR_DRAWING")) {
-                String message = intent.getStringExtra("msg");
-
-                String[] point = message.split("\\|");
-                Log.d(TAG, "Mqtt messageArrived() drawing : " + message);
-                mCanvas.drawStarLine(Integer.parseInt(point[0]), Integer.parseInt(point[1]), Integer.parseInt(point[2]), Integer.parseInt(point[3]));
-            }*/
         }
     };
 

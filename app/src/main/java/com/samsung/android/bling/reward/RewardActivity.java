@@ -134,6 +134,8 @@ public class RewardActivity extends Activity {
 
                 /*for (PhotoKitItemVo item : mPhotoKitList) {
                     Log.d(TAG, mPhotoKitList.size() + "," + item.getMemberId() + "," + item.getAlbumCT());
+                    // 추후 속도개선 측면에서 쓸때
+                    RequestBuilder<Drawable> requestBuilder = Glide.with(RewardActivity.this).load(item.getMemberImageUrl());
                 }*/
             }
 
